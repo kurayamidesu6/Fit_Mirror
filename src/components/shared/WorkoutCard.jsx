@@ -1,10 +1,11 @@
 import { Link } from 'react-router-dom';
+import { useRef, useEffect } from 'react';
 import { Heart, Bookmark, Play, Shield } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { useSettings } from '@/lib/SettingsContext';
 
-const WORKOUT_IMAGES = [
+const FALLBACK_IMAGES = [
   'https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=600&h=800&fit=crop',
   'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=600&h=800&fit=crop',
   'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=600&h=800&fit=crop',
@@ -13,9 +14,38 @@ const WORKOUT_IMAGES = [
   'https://images.unsplash.com/photo-1574680096145-d05b474e2155?w=600&h=800&fit=crop',
 ];
 
-function getWorkoutImage(workout) {
-  if (workout.thumbnail_url) return workout.thumbnail_url;
-  return WORKOUT_IMAGES[(workout.id?.charCodeAt?.(0) || 0) % WORKOUT_IMAGES.length];
+/**
+ * Renders a paused video frame as a thumbnail when a video_url is available.
+ * Seeks to 1 second so we skip past any black/fade-in at the very start.
+ * Falls back to an <img> when no video_url exists.
+ */
+function WorkoutThumbnail({ workout, className }) {
+  const videoRef = useRef(null);
+
+  useEffect(() => {
+    const v = videoRef.current;
+    if (!v) return;
+    const onMeta = () => { v.currentTime = 1; };
+    v.addEventListener('loadedmetadata', onMeta);
+    return () => v.removeEventListener('loadedmetadata', onMeta);
+  }, [workout.video_url]);
+
+  if (workout.video_url) {
+    return (
+      <video
+        ref={videoRef}
+        src={workout.video_url}
+        muted
+        playsInline
+        preload="metadata"
+        className={className}
+      />
+    );
+  }
+
+  const fallback = workout.thumbnail_url
+    || FALLBACK_IMAGES[(workout.id?.charCodeAt?.(0) || 0) % FALLBACK_IMAGES.length];
+  return <img src={fallback} alt={workout.title} className={className} />;
 }
 
 const difficultyColors = {
@@ -25,14 +55,13 @@ const difficultyColors = {
 };
 
 export default function WorkoutCard({ workout, variant = 'feed' }) {
-  const image = getWorkoutImage(workout);
   const { bgEnabled } = useSettings();
 
   if (variant === 'compact') {
     return (
       <Link to={`/workout/${workout.id}`} className="block">
         <div className="relative aspect-square rounded-xl overflow-hidden group">
-          <img src={image} alt={workout.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+          <WorkoutThumbnail workout={workout} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
           <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent" />
           {/* Play on hover */}
           <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
@@ -57,11 +86,10 @@ export default function WorkoutCard({ workout, variant = 'feed' }) {
           ? 'bg-black/50 backdrop-blur-sm border-white/10'
           : 'bg-card border-border'
       )}>
-        {/* Image */}
+        {/* Thumbnail — video frame if video_url exists, else image */}
         <div className="relative aspect-[3/4] overflow-hidden">
-          <img
-            src={image}
-            alt={workout.title}
+          <WorkoutThumbnail
+            workout={workout}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
           />
           <div className={cn(
