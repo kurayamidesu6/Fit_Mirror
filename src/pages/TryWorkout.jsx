@@ -507,7 +507,6 @@ export default function TryWorkout() {
   }, [navigate, phase, saveAttempt]);
 
   const isLiveMode = mode === 'live';
-  const isUploadMode = mode === 'upload';
   const isLoadingModel = modelStatus === 'loading';
   const isRunning = phase === 'running';
   const isProcessing = phase === 'processing';
