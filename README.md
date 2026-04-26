@@ -1,518 +1,245 @@
-**Welcome to your Fit Mirror project** 
+# 💪 Social Fitness App (MVP)
 
-**About**
+A social fitness platform where users replicate short workout videos and receive a similarity score based on their movement. The app gamifies fitness through rewards, rankings, challenges, and progression, with future support for blockchain-based incentives.
 
-The product is a social fitness app where creators upload short workout reps, and other users attempt to copy the movement. The app uses pose/body tracking to compare the attempt to the original and gives the user a similarity score. If they pass the threshold, they earn rewards connected to Solana and progress through a community ranking system.
+--------------------------------------------------------------------
 
-CORE USER FLOW
-Browse workout feed
-Open workout detail
-Click “Try It”
-Simulate recording an attempt (camera placeholder)
-See similarity score, pass/fail, and reward
-View progress on profile
-Unlock Pro content after progress
+## 🚀 Core Concept
 
-MAIN FEATURES
-Workout Creation:
-Users can upload a short video showing ONE clear workout repetition
-Each workout includes:
-title
-description
-category (strength, cardio, mobility, etc.)
-difficulty (beginner, intermediate, advanced)
-target muscle group
-creator name
-likes and saves
-Workout Attempt System:
-Users click “Try It” to attempt a workout
-Show a recording UI (mocked camera interface)
-After submission, show a result screen with:
-similarity score (0–100)
-pass/fail result (configurable threshold ~70–80)
-reward earned (mocked)
-Pose Scoring (Mocked but Structured):
-Create a utility/service for pose comparison
-Describe how it would work using:
-joint angles
-motion path
-timing
-Return a mocked similarity score for now
-Make threshold configurable
-Rewards (Solana-ready but mocked):
-Users earn points/tokens after passing workouts
-Include placeholder logic for Solana wallet integration
-Structure code so real blockchain payout can be added later
-Ranking System:
-Beginner (default)
-Intermediate (unlocked after X completed workouts)
-Pro (unlocked after more completions + engagement)
-All ranks can upload workouts
-Rank shown on profile
+- Creators upload **single-rep workout videos**
+- Users attempt to replicate movements via recording
+- A (mocked) pose system scores similarity
+- Successful attempts earn **Fit Points**
+- Users unlock content and progress through ranks
 
-PRO (PROFESSIONAL COACHING) SECTION
-Add a “Pro” tab in the main navigation.
-Purpose:
-Provide premium coaching-style workout content
-Incentivize users to complete workouts and improve form
-Locked State:
-Pro section is locked initially
-Show preview cards of Pro content (blurred or partially visible)
-Display progress indicator (e.g., “3/5 workouts completed to unlock”)
-Show call-to-action to complete more workouts
-Unlock Logic:
-Unlock Pro section after completing a set number of successful workouts (e.g., 5)
-Include a user property like isProUnlocked
-Structure logic so token-based unlock can be added later
-Pro Content:
-Use mock videos
-Label content as:
-“Verified Coach”
-“Pro Content”
-Focus on:
-form correction
-technique tips
-optimized workouts
-Give slightly more premium UI styling
-UX Detail:
-When a user fails a workout, suggest unlocking Pro content for improvement
+--------------------------------------------------------------------
 
-PAGES / SCREENS
-Feed Page:
-Vertical, TikTok-style workout feed
-Workout cards with:
-video preview
-title
-creator
-like/save buttons
-Filters (category, difficulty)
-Optional trending section
-Workout Detail Page:
-Video player
-Workout metadata
-“Try It” button
-Creator info
-Try Workout Page:
-Camera/recording placeholder UI
-Instructions for front-facing recording
-Submit button
-Attempt Result Page:
-Similarity score visualization
-Pass/fail badge
-Reward earned
-Feedback summary
-Profile Page:
-Avatar
-Wallet status (mocked)
-Rank badge
-Stats:
-workouts completed
-uploads
-rewards
-User’s uploaded workouts grid
-Create Workout Page:
-Upload video
-Input fields:
-title
-description
-category
-difficulty
-target muscle group
-Pro Page:
-Locked/unlocked states
-Preview cards when locked
-Full access when unlocked
 
-WEEKLY WORKOUT CALENDAR / REGIMEN BUILDER
-Inside the Profile tab, add a weekly calendar planner that allows the user to build their own workout routine.
-Requirements:
-Show all days of the week:
-Monday
-Tuesday
-Wednesday
-Thursday
-Friday
-Saturday
-Sunday
-Saved workouts behavior:
-The user’s saved videos/workouts should appear in a saved workouts panel within the profile
-Each saved workout card should show:
-title
-category
-suggested reps
-suggested sets
-thumbnail/video preview
-User can drag saved workout cards into any day of the week
-This creates the user’s custom weekly regimen/workout plan
-Calendar behavior:
-Each day should accept one or more dragged workouts
-User should be able to remove a workout from a day
-User should be able to move workouts between days
-Show a clean drag-and-drop UI
-Maintain the scheduled state in mock data or local state
-Routine data structure:
-Store the weekly schedule in a structured way, for example:
-each day contains an array of assigned workouts
-each assigned workout carries title, id, sets, reps, and category
-This weekly workout planner is a major part of the product and should feel interactive and polished.
+## 🔄 Core User Flow
 
-ACHIEVEMENTS / TASKS SECTION
-Add an Achievements section in the Profile tab.
-This section should contain:
-Daily tasks
-Weekly tasks
-Monthly tasks
-These tasks must be generated based on the user’s weekly workout calendar.
-Task logic:
-Daily tasks
-Based on workouts assigned to a specific day
-Use the saved workout’s suggested sets and reps
-Example:
-“Complete 3 sets of 12 squats”
-“Finish 4 sets of 10 push-ups”
-Daily tasks should be tied directly to the workouts scheduled for that day
-Weekly tasks
-Based on how many times daily workout tasks are expected to be completed across the week
-Example:
-“Complete your squat routine 3 times this week”
-“Finish all scheduled core workouts this week”
-Weekly tasks should summarize repetition and consistency over the week
-Monthly tasks
-Based on how often the same scheduled daily tasks are completed over a month
-Example:
-“Complete your push-up plan 12 times this month”
-“Maintain your full lower body routine for 4 weeks”
-Monthly tasks should reward consistency and long-term adherence
-Achievement system requirements:
-Generate tasks automatically from the weekly calendar schedule
-Show each task with:
-title
-description
-progress bar
-reward amount
-completion state
-Separate tasks into Daily / Weekly / Monthly tabs or grouped sections
-Completion of tasks should reward in-app currency
-Include mock progress data for demo purposes
-Make the logic modular so real workout completions can update task progress later
-Important:
-The achievement system should feel connected to the workout planner, not random
-Tasks should clearly reflect the user’s chosen regimen
-__________________________________________________________________________
-NAVIGATION
-Simple tab navigation:
-Feed
-Create
-Pro
-Profile
+1. Browse workout feed  
+2. Open workout details  
+3. Click **"Try It"**  
+4. Record attempt (mock camera UI)  
+5. Receive similarity score + result  
+6. Earn rewards  
+7. Track progress on profile  
+8. Unlock Pro content  
 
-TECHNICAL REQUIREMENTS
-Use React with clean component structure
-Modular and reusable components
-Organize by:
-pages
-components
-services (pose, rewards, user)
-Use mock datasets for:
-users
-workouts
-attempt results
-Add comments indicating where:
-pose tracking (MediaPipe / TensorFlow.js) would integrate
-Solana reward logic would integrate
+--------------------------------------------------------------------
 
-DESIGN STYLE
-Modern, clean, mobile-first
-Fitness + creator economy vibe
-Smooth card-based UI
-Clear CTAs
-Feels like a mix of:
-TikTok (feed)
-Strava (fitness tracking)
-Gamified workout app
+## 🧩 Features
 
-DELIVERABLES
-Fully working frontend MVP
-Mock data included
-Clear component structure
-README with:
-setup instructions
-explanation of architecture
-notes on where to plug in real pose tracking and blockchain logic
-Goal:
-The app should feel polished, demo-ready, and clearly demonstrate the core idea:
-Users replicate workouts, get scored on movement, earn rewards, and unlock higher-level fitness content.
+### 🏋️ Workout System
+- Upload single-rep workout videos
+- Metadata includes:
+  - Title
+  - Description
+  - Category (strength, cardio, etc.)
+  - Difficulty
+  - Target muscle group
+- Like and save workouts
 
-WEEKLY WORKOUT CALENDAR / REGIMEN BUILDER
-Inside the Profile tab, add a weekly calendar planner that allows the user to build their own workout routine.
-Requirements:
-Show all days of the week:
-Monday
-Tuesday
-Wednesday
-Thursday
-Friday
-Saturday
-Sunday
-Saved workouts behavior:
-The user’s saved videos/workouts should appear in a saved workouts panel within the profile
-Each saved workout card should show:
-title
-category
-suggested reps
-suggested sets
-thumbnail/video preview
-User can drag saved workout cards into any day of the week
-This creates the user’s custom weekly regimen/workout plan
-Calendar behavior:
-Each day should accept one or more dragged workouts
-User should be able to remove a workout from a day
-User should be able to move workouts between days
-Show a clean drag-and-drop UI
-Maintain the scheduled state in mock data or local state
-Routine data structure:
-Store the weekly schedule in a structured way, for example:
-each day contains an array of assigned workouts
-each assigned workout carries title, id, sets, reps, and category
-This weekly workout planner is a major part of the product and should feel interactive and polished.
+--------------------------------------------------------------------
 
-ACHIEVEMENTS / TASKS SECTION
-Add an Achievements section in the Profile tab.
-This section should contain:
-Daily tasks
-Weekly tasks
-Monthly tasks
-These tasks must be generated based on the user’s weekly workout calendar.
-Task logic:
-Daily tasks
-Based on workouts assigned to a specific day
-Use the saved workout’s suggested sets and reps
-Example:
-“Complete 3 sets of 12 squats”
-“Finish 4 sets of 10 push-ups”
-Daily tasks should be tied directly to the workouts scheduled for that day
-Weekly tasks
-Based on how many times daily workout tasks are expected to be completed across the week
-Example:
-“Complete your squat routine 3 times this week”
-“Finish all scheduled core workouts this week”
-Weekly tasks should summarize repetition and consistency over the week
-Monthly tasks
-Based on how often the same scheduled daily tasks are completed over a month
-Example:
-“Complete your push-up plan 12 times this month”
-“Maintain your full lower body routine for 4 weeks”
-Monthly tasks should reward consistency and long-term adherence
-Achievement system requirements:
-Generate tasks automatically from the weekly calendar schedule
-Show each task with:
-title
-description
-progress bar
-reward amount
-completion state
-Separate tasks into Daily / Weekly / Monthly tabs or grouped sections
-Completion of tasks should reward in-app currency
-Include mock progress data for demo purposes
-Make the logic modular so real workout completions can update task progress later
-Important:
-The achievement system should feel connected to the workout planner, not random
-Tasks should clearly reflect the user’s chosen regimen
-__________________________________________________________________________
+### 🎯 Attempt & Scoring
+- Mock recording interface
+- Similarity score (0–100)
+- Configurable pass threshold (~70–80)
+- Feedback and reward system
 
-Add a Challenge tab, Store tab, tipping system, and anti-cheat identity verification flow to the app.
+--------------------------------------------------------------------
 
-----------------------------------
-CHALLENGE TAB
-----------------------------------
-Add a Challenge tab to the main bottom navigation.
 
-Purpose:
-- Let users stake Fit Points on time-limited fitness challenges
-- Increase engagement and create a high-risk/high-reward progression loop
-- Encourage users to push themselves while keeping challenge generation personalized and realistic
+### 🤖 Pose Tracking (Mocked)
+Structured for future implementation using:
+- Joint angle comparison
+- Motion path tracking
+- Timing analysis
 
-Challenge rules:
-- Do NOT call this gambling in the product copy
-- Use preset challenge tiers instead of freeform bet amounts
-- Each tier stakes a fixed amount of Fit Points
-- Example tiers:
-  - Low Risk
-  - Medium Risk
-  - High Risk
-- Each challenge must be completed within 24 hours
-- If the user completes the challenge, they earn a multiplied reward
-- If they fail, they lose the staked Fit Points
+> Planned integration: MediaPipe / TensorFlow.js
 
-Challenge generation:
-- Difficulty should be based on:
-  - user rank (Beginner / Intermediate / Pro)
-  - recent completion history
-  - streak / consistency
-  - selected challenge tier
-- Challenges should scale sharply in difficulty as stake tier increases
-- Challenges should be difficult but not secretly impossible
-- Higher stakes should feel extreme and low-probability, but still technically achievable
-- Beginner and Intermediate users at the same tier may receive similar workout types, but Beginner users should have fewer reps/sets or lighter challenge requirements
+--------------------------------------------------------------------
 
-Recommendation system:
-- Include a recommended challenge tier based on user history and recent progress
-- This can be mocked using rules-based logic
-- Present it as a smart recommendation engine for now
 
-Challenge UI should show:
-- stake amount
-- estimated difficulty
-- risk label
-- time remaining
-- challenge description
-- reward multiplier
-- recommended tier
+### 💰 Rewards System (Solana-Ready)
+- Earn **Fit Points** for successful attempts
+- Mock wallet integration
+- Designed for future blockchain payouts
 
-----------------------------------
-STORE TAB
-----------------------------------
-Add a Store tab to the main bottom navigation.
+--------------------------------------------------------------------
 
-Purpose:
-- Give Fit Points meaningful utility
-- Let users spend their earned currency on progression-related rewards
-- Demonstrate future potential for crypto-connected rewards
 
-Store items should include:
-- Pro content unlock
-- premium workout plans
-- advanced form feedback
-- streak protection
-- retry-related boosts
-- routine templates
-- profile cosmetics
-- creator support/tipping options
+### 🏆 Ranking System
+- Beginner → Intermediate → Pro
+- Progress based on:
+  - Workout completions
+  - Engagement
+- All ranks can upload content
 
-Mock Solana exchange:
-- Include a mocked conversion system showing that Fit Points can be exchanged into Solana tokens conceptually
-- Make it clear in code/comments/UI that this is a demo/mock implementation
-- Use this to showcase future blockchain integration without promising real economic redemption
+--------------------------------------------------------------------
 
-----------------------------------
-TIPPING SYSTEM
-----------------------------------
-Add a tipping system that allows users to support creators.
 
-Requirements:
-- Users can tip creators using Fit Points
-- Optionally show mock Solana token tipping support in the UI
-- Creator cards and workout detail pages should include a tip action
-- Tipping should feel social and community-driven
+## 💎 Pro Section
 
-----------------------------------
-ANTI-CHEAT / IDENTITY VERIFICATION FLOW
-----------------------------------
-Add a lightweight anti-cheat and identity verification flow for workout attempts and challenge submissions.
+- Locked initially
+- Unlock after completing workouts
+- Includes:
+  - Coach-led content
+  - Form correction
+  - Technique tips
+- Structured for future token-based unlocks
 
-Purpose:
-- Reduce impersonation
-- Reduce replay abuse
-- Strengthen the cybersecurity angle of the project
-- Show a multi-signal verification pipeline
+--------------------------------------------------------------------
 
-Identity enrollment:
-- During onboarding or profile setup, user captures a profile selfie or face reference image
-- Store this as the enrolled identity for future verification
 
-Pre-workout verification:
-- Before a verified workout attempt or challenge attempt starts, require a live front-camera identity check
-- Compare the live face capture to the enrolled reference image
-- Output a simple confidence result
+## 📅 Weekly Workout Planner
 
-Randomized liveness prompt:
-- Before recording begins, show a random prompt the user must perform live
-- Prompt should be selected randomly from a list such as:
-  - Blink twice
-  - Turn head left
-  - Turn head right
+- Drag-and-drop weekly calendar (Mon–Sun)
+- Build custom routines
+- Assign saved workouts to days
+- Modify, move, or remove workouts
+- Stored in structured state
+
+--------------------------------------------------------------------
+
+
+## 🎯 Achievements System
+
+Auto-generated from the workout schedule:
+
+### Daily Tasks
+- Based on scheduled workouts
+- Example: "Complete 3 sets of 12 squats"
+
+### Weekly Tasks
+- Based on consistency
+- Example: "Complete squat routine 3 times"
+
+### Monthly Tasks
+- Long-term adherence goals
+- Example: "Complete push-up plan 12 times"
+
+Includes:
+- Progress tracking
+- Rewards
+- Modular logic for future real tracking
+
+--------------------------------------------------------------------
+
+
+## ⚔️ Challenge System
+
+- 24-hour time-limited challenges
+- Risk tiers:
+  - Low
+  - Medium
+  - High
+- Stake Fit Points for higher rewards
+- Personalized difficulty based on:
+  - Rank
+  - History
+  - Consistency
+- Recommended tier system (mocked)
+
+--------------------------------------------------------------------
+
+
+## 🛒 Store
+
+Spend Fit Points on:
+- Pro unlocks
+- Premium workout plans
+- Streak protection
+- Retry boosts
+- Cosmetics
+- Routine templates
+
+Includes a **mock Fit Points → Solana exchange system**
+
+--------------------------------------------------------------------
+
+
+## 💸 Tipping System
+
+- Tip creators using Fit Points
+- Social, community-driven support
+- Placeholder for crypto tipping
+
+--------------------------------------------------------------------
+
+
+## 🔐 Anti-Cheat & Verification
+
+Multi-layer verification system:
+
+- Identity enrollment (selfie)
+- Pre-workout face verification
+- Random liveness prompts:
+  - Blink
+  - Turn head
   - Smile
-  - Raise eyebrows
-  - Look up then back at the camera
-- Recording only starts after the liveness prompt is completed successfully
+- Duplicate submission detection
+- Metadata checks
 
-Recording rules:
-- Challenge attempts should prefer or require live in-app recording instead of uploaded files
-- Only allow submission after identity + liveness checks pass
+> Designed for future computer vision integration
 
-Additional anti-cheat signals:
-- Inspect media metadata if available
-- Detect duplicate uploads or repeated submissions using file hash / media signature logic
-- Treat metadata as only one fraud signal, not perfect proof
-- Include a submission risk/confidence indicator in the architecture
-
-Implementation notes:
-- Use mocked logic where needed, but structure the code so real face detection / matching / liveness verification can be integrated later
-- Add comments for future cybersecurity and computer vision integration points
-- Describe the system as identity verification + liveness + duplicate detection, not as guaranteed biometric authentication
-
-----------------------------------
-NAVIGATION UPDATE
-----------------------------------
-Update the app navigation so the bottom tabs are:
-- Feed
-- Create
-- Challenge
-- Store
-- Pro
-
-Move Profile and Achievements access to the top-right area of the UI:
-- Profile icon/button
-- Achievements icon/button
-
-Profile should still contain:
-- saved workouts
-- weekly calendar
-- progress
-- rank
-- uploads
-- rewards
-
-Achievements should still contain:
-- daily tasks
-- weekly tasks
-- monthly tasks
-- rewards based on the user’s scheduled workout regimen
+--------------------------------------------------------------------
 
 
+## 🧭 Navigation
 
-View and Edit  your app on [Base44.com](http://Base44.com) 
+### Main Tabs
+- Feed  
+- Create  
+- Challenge  
+- Store  
+- Pro  
 
-This project contains everything you need to run your app locally.
+### Top Right
+- Profile  
+- Achievements  
 
-**Edit the code in your local development environment**
+--------------------------------------------------------------------
 
-Any change pushed to the repo will also be reflected in the Base44 Builder.
 
-**Prerequisites:** 
+## 🖥️ Tech Stack
 
-1. Clone the repository using the project's Git URL 
-2. Navigate to the project directory
-3. Install dependencies: `npm install`
-4. Create an `.env.local` file and set the right environment variables
+- React (component-based architecture)
 
-```
-VITE_BASE44_APP_ID=your_app_id
-VITE_BASE44_APP_BASE_URL=your_backend_url
+### Structure
 
-e.g.
-VITE_BASE44_APP_ID=cbef744a8545c389ef439ea6
-VITE_BASE44_APP_BASE_URL=https://my-to-do-list-81bfaad7.base44.app
-```
+- Mock datasets:
+  - Users
+  - Workouts
+  - Attempts
 
-Run the app: `npm run dev`
+--------------------------------------------------------------------
 
-**Publish your changes**
 
-Open [Base44.com](http://Base44.com) and click on Publish.
+## 🎨 Design
 
-**Docs & Support**
+- Mobile-first UI
+- Clean, modern interface
+- Card-based layout
+- Inspired by:
+  - TikTok (content feed)
+  - Strava (fitness tracking)
 
-Documentation: [https://docs.base44.com/Integrations/Using-GitHub](https://docs.base44.com/Integrations/Using-GitHub)
+--------------------------------------------------------------------
 
-Support: [https://app.base44.com/support](https://app.base44.com/support)
+
+## ⚙️ Setup Instructions
+
+```bash
+# Clone the repository
+git clone <your-repo-url>
+
+# Navigate into the project
+cd <project-folder>
+
+# Install dependencies
+npm install
+
+# Start development server
+npm run dev
