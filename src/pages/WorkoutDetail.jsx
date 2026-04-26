@@ -1,14 +1,14 @@
-import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { entities } from '@/api/entities';
 import { supabase } from '@/api/supabaseClient';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { ArrowLeft, Heart, Bookmark, Play, Clock, Target, BarChart3, Users, Shield } from 'lucide-react';
+import { ArrowLeft, Bookmark, Play, Clock, Target, BarChart3, Users, Shield } from 'lucide-react';
 import TipCreator from '@/components/shared/TipCreator';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { useSettings } from '@/lib/SettingsContext';
+import { PASS_THRESHOLD_DEFAULT } from '@/lib/poseScoring';
 
 const WORKOUT_IMAGES = [
   'https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=800&h=1000&fit=crop',
@@ -78,6 +78,7 @@ export default function WorkoutDetail() {
       queryClient.invalidateQueries({ queryKey: ['saved-workouts'] });
     },
   });
+  const { bgEnabled } = useSettings();
 
   if (isLoading || !workout) {
     return (
@@ -88,50 +89,63 @@ export default function WorkoutDetail() {
   }
 
   const image = workout.thumbnail_url || WORKOUT_IMAGES[(workout.id?.charCodeAt?.(0) || 0) % WORKOUT_IMAGES.length];
-  const { bgEnabled } = useSettings();
+  const passThreshold = Math.max(PASS_THRESHOLD_DEFAULT, workout.pass_threshold || PASS_THRESHOLD_DEFAULT);
 
   return (
     <div className="min-h-screen pb-8">
-      {/* Hero Image */}
-      <div className="relative aspect-[3/4] max-h-[60vh]">
-        <img src={image} alt={workout.title} className="w-full h-full object-cover" />
-        <div className={cn(
-          'absolute inset-0 bg-gradient-to-t to-transparent',
-          bgEnabled
-            ? 'from-black/90 via-black/40'
-            : 'from-background via-background/40'
-        )} />
+      <div className="px-4 sm:px-8 pt-6">
+        <div className="max-w-5xl mx-auto">
+          <div className="relative aspect-video w-full overflow-hidden rounded-2xl bg-black border border-border shadow-sm">
+            {workout.video_url ? (
+              <video
+                src={workout.video_url}
+                poster={image}
+                className="w-full h-full object-contain"
+                controls
+                playsInline
+                preload="metadata"
+                crossOrigin="anonymous"
+              />
+            ) : (
+              <>
+                <img src={image} alt={workout.title} className="w-full h-full object-cover" />
+                <div className={cn(
+                  'absolute inset-0 bg-gradient-to-t to-transparent',
+                  bgEnabled
+                    ? 'from-black/80 via-black/20'
+                    : 'from-black/70 via-black/10'
+                )} />
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="w-16 h-16 rounded-full bg-primary/80 flex items-center justify-center glow-primary">
+                    <Play className="w-7 h-7 text-primary-foreground ml-0.5" fill="currentColor" />
+                  </div>
+                </div>
+              </>
+            )}
 
-        {/* Back button */}
-        <Link to="/" className="absolute top-4 left-4 z-10">
-          <Button variant="ghost" size="icon" className="rounded-full bg-black/30 backdrop-blur-sm hover:bg-black/50">
-            <ArrowLeft className="w-5 h-5" />
-          </Button>
-        </Link>
+            <Link to="/" className="absolute top-4 left-4 z-10">
+              <Button variant="ghost" size="icon" className="rounded-full bg-black/45 text-white backdrop-blur-sm hover:bg-black/65">
+                <ArrowLeft className="w-5 h-5" />
+              </Button>
+            </Link>
 
-        {/* Action buttons */}
-        <div className="absolute top-4 right-4 z-10 flex gap-2">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="rounded-full bg-black/30 backdrop-blur-sm hover:bg-black/50"
-            onClick={() => saveMutation.mutate()}
-            disabled={saveMutation.isPending}
-          >
-            <Bookmark className={cn("w-5 h-5 transition-colors", isSaved && "fill-primary text-primary")} />
-          </Button>
-        </div>
-
-        {/* Play overlay */}
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="w-16 h-16 rounded-full bg-primary/80 flex items-center justify-center glow-primary cursor-pointer hover:scale-110 transition-transform">
-            <Play className="w-7 h-7 text-primary-foreground ml-0.5" fill="currentColor" />
+            <div className="absolute top-4 right-4 z-10 flex gap-2">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="rounded-full bg-black/45 text-white backdrop-blur-sm hover:bg-black/65"
+                onClick={() => saveMutation.mutate()}
+                disabled={saveMutation.isPending}
+              >
+                <Bookmark className={cn("w-5 h-5 transition-colors", isSaved && "fill-primary text-primary")} />
+              </Button>
+            </div>
           </div>
         </div>
       </div>
 
       {/* Content */}
-      <div className="max-w-3xl mx-auto px-8 -mt-8 relative z-10">
+      <div className="max-w-5xl mx-auto px-4 sm:px-8 pt-6 relative z-10">
         <div className="flex gap-2 mb-3">
           <Badge className={cn("text-xs font-semibold border-0", difficultyColors[workout.difficulty])}>
             {workout.difficulty}
@@ -166,7 +180,7 @@ export default function WorkoutDetail() {
           {[
             { icon: Clock, label: 'Duration', value: `${workout.duration_seconds || 30}s` },
             { icon: Target, label: 'Target', value: workout.target_muscle?.replace(/_/g, ' ') || 'Full body' },
-            { icon: BarChart3, label: 'Threshold', value: `${workout.pass_threshold || 75}%` },
+            { icon: BarChart3, label: 'Threshold', value: `${passThreshold}%` },
             { icon: Users, label: 'Attempts', value: workout.attempts_count || 0 },
           ].map(({ icon: Icon, label, value }) => (
             <div key={label} className="bg-card rounded-xl p-3 text-center border border-border">

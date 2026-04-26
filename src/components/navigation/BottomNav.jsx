@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Flame, Plus, Swords, ShoppingBag, Crown, Trophy, LogOut, PanelLeftClose, Settings } from 'lucide-react';
+import { Flame, Plus, Swords, Crown, Trophy, LogOut, PanelLeftClose, Settings } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/lib/AuthContext';
 import { useSettings } from '@/lib/SettingsContext';
@@ -9,7 +9,6 @@ const NAV_ITEMS = [
   { path: '/create', icon: Plus, label: 'Create' },
   { path: '/', icon: Flame, label: 'Feed' },
   { path: '/challenge', icon: Swords, label: 'Challenge' },
-  { path: '/store', icon: ShoppingBag, label: 'Store' },
   { path: '/pro', icon: Crown, label: 'Pro' },
 ];
 

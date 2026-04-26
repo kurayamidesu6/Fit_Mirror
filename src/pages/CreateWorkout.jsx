@@ -10,6 +10,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/components/ui/use-toast';
+import { PASS_THRESHOLD_DEFAULT } from '@/lib/poseScoring';
 
 const CATEGORIES = ['strength', 'cardio', 'mobility', 'hiit', 'yoga', 'calisthenics'];
 const DIFFICULTIES = ['beginner', 'intermediate', 'advanced'];
@@ -36,7 +37,7 @@ export default function CreateWorkout() {
     difficulty: '',
     target_muscle: '',
     duration_seconds: 30,
-    pass_threshold: 75,
+    pass_threshold: PASS_THRESHOLD_DEFAULT,
   });
 
   const updateField = (field, value) => setForm(prev => ({ ...prev, [field]: value }));
@@ -164,9 +165,9 @@ export default function CreateWorkout() {
               <Label className="text-sm font-semibold mb-2 block">Pass Threshold (%)</Label>
               <Input
                 type="number"
-                min={50} max={100}
+                min={PASS_THRESHOLD_DEFAULT} max={100}
                 value={form.pass_threshold}
-                onChange={(e) => updateField('pass_threshold', parseInt(e.target.value) || 75)}
+                onChange={(e) => updateField('pass_threshold', Math.max(PASS_THRESHOLD_DEFAULT, parseInt(e.target.value) || PASS_THRESHOLD_DEFAULT))}
                 className="h-11 rounded-xl text-base"
               />
             </div>

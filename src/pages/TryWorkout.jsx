@@ -18,7 +18,7 @@ import { Button } from '@/components/ui/button';
 import ScoreRing from '@/components/shared/ScoreRing';
 import { entities } from '@/api/entities';
 import { useWallet } from '@/lib/WalletContext';
-import { performPoseComparison } from '@/lib/poseScoring';
+import { calculateSimilarityScore, PASS_THRESHOLD_DEFAULT, performPoseComparison } from '@/lib/poseScoring';
 import {
   comparePoseAngles,
   extractJointAngles,
@@ -415,6 +415,11 @@ export default function TryWorkout() {
         setLiveScore(average(scoreSamplesRef.current.slice(-12)));
       }
 
+      if (framesRef.current.length >= MIN_FRAMES_TO_SCORE) {
+        const recentFrames = framesRef.current.slice(-90);
+        setLiveScore(calculateSimilarityScore(workout?.difficulty, recentFrames));
+      }
+
       setFramesCaptured(framesRef.current.length);
       setPoseStatus({ user: hasUserPose, ref: hasRefPose || !workout?.video_url });
       setLiveCue(cueForScore(frameScore, hasUserPose, hasRefPose || !workout?.video_url));
@@ -513,7 +518,7 @@ export default function TryWorkout() {
   const isBusy = phase === 'starting' || phase === 'finishing' || isProcessing;
   const canStartLive = modelStatus === 'ready' && isLiveMode && !isRunning && !isBusy;
   const canSwitchMode = !isRunning && !isBusy;
-  const threshold = workout?.pass_threshold || 75;
+  const threshold = Math.max(PASS_THRESHOLD_DEFAULT, workout?.pass_threshold || PASS_THRESHOLD_DEFAULT);
   const displayedScore = liveScore ?? 0;
 
   return (

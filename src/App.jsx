@@ -16,7 +16,6 @@ import Profile from '@/pages/Profile';
 import CreateWorkout from '@/pages/CreateWorkout';
 import Pro from '@/pages/Pro';
 import Challenge from '@/pages/Challenge';
-import Store from '@/pages/Store';
 import Achievements from '@/pages/Achievements';
 import Settings from '@/pages/Settings';
 import Login from '@/pages/Login';
@@ -51,7 +50,7 @@ const AuthenticatedApp = () => {
         <Route path="/create" element={isAuthenticated ? <CreateWorkout /> : <Navigate to="/login" replace />} />
         <Route path="/pro" element={<Pro />} />
         <Route path="/challenge" element={isAuthenticated ? <Challenge /> : <Navigate to="/login" replace />} />
-        <Route path="/store" element={<Store />} />
+        <Route path="/store" element={<Navigate to="/" replace />} />
         <Route path="/achievements" element={isAuthenticated ? <Achievements /> : <Navigate to="/login" replace />} />
         <Route path="/settings" element={isAuthenticated ? <Settings /> : <Navigate to="/login" replace />} />
       </Route>
