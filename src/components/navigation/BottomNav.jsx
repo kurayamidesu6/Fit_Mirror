@@ -5,6 +5,7 @@ import { cn } from '@/lib/utils';
 import { useAuth } from '@/lib/AuthContext';
 import { useSettings } from '@/lib/SettingsContext';
 import WalletButton from '@/components/wallet/WalletButton';
+import NotificationBell from '@/components/shared/NotificationBell';
 
 const NAV_ITEMS = [
   { path: '/create', icon: Plus, label: 'Create' },
@@ -36,13 +37,16 @@ export default function SideNav({ collapsed, onCollapse }) {
           <img src={logo} alt="Fit Mirror" className="w-9 h-9 object-contain rounded-lg" />
           <span className="font-space font-bold text-xl tracking-tight whitespace-nowrap">Fit Mirror</span>
         </div>
-        <button
-          onClick={onCollapse}
-          className="w-7 h-7 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary transition-all duration-150 flex-shrink-0"
-          title="Hide sidebar"
-        >
-          <PanelLeftClose className="w-4 h-4" />
-        </button>
+        <div className="flex items-center gap-1.5 flex-shrink-0">
+          <NotificationBell />
+          <button
+            onClick={onCollapse}
+            className="w-7 h-7 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary transition-all duration-150"
+            title="Hide sidebar"
+          >
+            <PanelLeftClose className="w-4 h-4" />
+          </button>
+        </div>
       </div>
 
       {/* Primary nav */}
