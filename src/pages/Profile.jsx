@@ -53,7 +53,8 @@ export default function Profile() {
 
   const { connected, shortAddr, solBalance, fitBalance } = useWallet();
 
-  const displayName = user?.user_metadata?.full_name || user?.email || 'Guest';
+  const username = user?.user_metadata?.username;
+  const displayName = username || user?.user_metadata?.full_name || user?.email || 'Guest';
   const passedAttempts = attempts.filter(a => a.passed);
   const completedCount = passedAttempts.length;
   const uploadCount = myWorkouts.filter(w => w.created_by === user?.id).length;
@@ -86,8 +87,12 @@ export default function Profile() {
                 {displayName[0]?.toUpperCase() || '?'}
               </div>
               <div>
-                <h2 className="font-bold text-lg">{displayName}</h2>
-                <p className="text-sm text-muted-foreground">{user?.email}</p>
+                <h2 className="font-bold text-lg">
+                  {username ? `@${username}` : displayName}
+                </h2>
+                {username && (
+                  <p className="text-sm text-muted-foreground">{user?.email}</p>
+                )}
                 <div className="mt-2">
                   <RankBadge completedWorkouts={completedCount} size="sm" />
                 </div>

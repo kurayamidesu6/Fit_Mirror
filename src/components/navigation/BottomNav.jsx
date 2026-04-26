@@ -1,5 +1,6 @@
 import { Link, useLocation } from 'react-router-dom';
 import { Flame, Plus, Swords, Crown, Trophy, LogOut, PanelLeftClose, Settings } from 'lucide-react';
+const logo = '/logo.png';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/lib/AuthContext';
 import { useSettings } from '@/lib/SettingsContext';
@@ -17,7 +18,7 @@ export default function SideNav({ collapsed, onCollapse }) {
   const { user, logout } = useAuth();
   const { bgEnabled } = useSettings();
 
-  const displayName = user?.user_metadata?.full_name || user?.email || 'Guest';
+  const displayName = user?.user_metadata?.username || user?.user_metadata?.full_name || user?.email || 'Guest';
 
   return (
     <aside
@@ -30,11 +31,9 @@ export default function SideNav({ collapsed, onCollapse }) {
       )}
     >
       {/* Logo + collapse button */}
-      <div className="px-5 py-6 border-b border-border flex items-center justify-between flex-shrink-0">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center">
-            <Flame className="w-6 h-6 text-primary" />
-          </div>
+      <div className="px-5 py-5 border-b border-border flex items-center justify-between flex-shrink-0">
+        <div className="flex items-center gap-2.5">
+          <img src={logo} alt="Fit Mirror" className="w-9 h-9 object-contain rounded-lg" />
           <span className="font-space font-bold text-xl tracking-tight whitespace-nowrap">Fit Mirror</span>
         </div>
         <button

@@ -1,6 +1,9 @@
 import { useState, useEffect } from 'react';
 import { entities } from '@/api/entities';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { supabase } from '@/api/supabaseClient';
+import { useAuth } from '@/lib/AuthContext';
+import { useWorkoutActions } from '@/lib/useWorkoutActions';
 import WorkoutCard from '@/components/shared/WorkoutCard';
 import CategoryFilter from '@/components/shared/CategoryFilter';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -9,6 +12,7 @@ import { seedWorkoutsIfEmpty } from '@/lib/seedData';
 export default function Feed() {
   const [category, setCategory] = useState('all');
   const queryClient = useQueryClient();
+  const { user } = useAuth();
 
   useEffect(() => {
     seedWorkoutsIfEmpty()
@@ -19,6 +23,40 @@ export default function Feed() {
   const { data: workouts = [], isLoading } = useQuery({
     queryKey: ['workouts'],
     queryFn: () => entities.Workout.list('-created_date', 50),
+  });
+
+  // Fetch IDs of workouts the current user has liked
+  const { data: likedRows = [] } = useQuery({
+    queryKey: ['liked-workouts', user?.id],
+    queryFn: async () => {
+      if (!user) return [];
+      const { data } = await supabase
+        .from('workout_likes')
+        .select('workout_id')
+        .eq('user_id', user.id);
+      return data || [];
+    },
+    enabled: !!user,
+  });
+
+  // Fetch IDs of workouts the current user has saved
+  const { data: savedRows = [] } = useQuery({
+    queryKey: ['saved-workouts', user?.id],
+    queryFn: async () => {
+      if (!user) return [];
+      const { data } = await supabase
+        .from('saved_workouts')
+        .select('workout_id')
+        .eq('user_id', user.id);
+      return data || [];
+    },
+    enabled: !!user,
+  });
+
+  const { likedIds, savedIds, likeDeltas, saveDeltas, toggleLike, toggleSave } = useWorkoutActions({
+    initialLikedIds: likedRows.map(r => r.workout_id),
+    initialSavedIds: savedRows.map(r => r.workout_id),
+    userId: user?.id ?? null,
   });
 
   const getFiltered = () => {
@@ -55,7 +93,16 @@ export default function Feed() {
         ) : (
           <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {filtered.map(workout => (
-              <WorkoutCard key={workout.id} workout={workout} />
+              <WorkoutCard
+                key={workout.id}
+                workout={workout}
+                isLiked={likedIds.has(workout.id)}
+                isSaved={savedIds.has(workout.id)}
+                likeDelta={likeDeltas[workout.id] || 0}
+                saveDelta={saveDeltas[workout.id] || 0}
+                onLike={() => toggleLike(workout)}
+                onSave={() => toggleSave(workout)}
+              />
             ))}
           </div>
         )}
