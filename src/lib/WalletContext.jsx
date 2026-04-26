@@ -5,6 +5,7 @@ import {
   TOKEN_SYMBOL,
 } from './wallet';
 import { claimReward, spendTokens } from './tokenService';
+import { supabase } from '@/api/supabaseClient';
 
 // ── Token economy constants ──────────────────────────────────────────────────
 export const ATTEMPT_FEE = 1;
@@ -92,6 +93,12 @@ export const WalletProvider = ({ children }) => {
     getSolBalance(addr).then(sol => { if (mounted.current) setSolBalance(sol); });
     refreshChainBalance(addr);
     startPolling(addr);
+    // Persist wallet address to profiles so creators can receive tips
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user) {
+        supabase.from('profiles').upsert({ id: user.id, wallet_address: addr }).then(() => {});
+      }
+    });
   }, [loadTx, refreshChainBalance, startPolling]);
 
   // Detect Phantom and auto-reconnect on mount

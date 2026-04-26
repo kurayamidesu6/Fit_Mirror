@@ -15,7 +15,9 @@ import {
 } from '@solana/web3.js';
 import {
   createTransferCheckedInstruction,
+  createAssociatedTokenAccountIdempotentInstruction,
   getAssociatedTokenAddress,
+  ASSOCIATED_TOKEN_PROGRAM_ID,
   TOKEN_2022_PROGRAM_ID,
 } from '@solana/spl-token';
 import { supabase } from '@/api/supabaseClient';
@@ -102,6 +104,69 @@ export async function spendTokens({ walletAddress, amount }) {
   );
 
   // Phantom signs and broadcasts the transaction
+  const { signature } = await provider.signAndSendTransaction(tx);
+  await connection.confirmTransaction({ signature, blockhash, lastValidBlockHeight });
+
+  return signature;
+}
+
+// ── Tip a creator (Phantom signs) ────────────────────────────────────────────
+
+/**
+ * Transfers FIT tokens directly from the tipping user's wallet to the
+ * creator's wallet. Phantom approval popup appears for the sender.
+ * Automatically creates the creator's Associated Token Account if it
+ * doesn't exist yet (idempotent instruction — safe to always include).
+ *
+ * @param {{ fromWallet: string, toWallet: string, amount: number }} opts
+ * @returns {Promise<string>} confirmed Solana transaction signature
+ */
+export async function tipCreator({ fromWallet, toWallet, amount }) {
+  const provider = getPhantomProvider();
+  if (!provider?.publicKey) throw new Error('Phantom wallet not connected');
+  if (!toWallet) throw new Error('Creator has not linked a wallet address yet');
+
+  const connection = new Connection(DEVNET_RPC, 'confirmed');
+  const mintPubkey   = new PublicKey(TOKEN_MINT_ADDRESS);
+  const fromPubkey   = new PublicKey(fromWallet);
+  const toPubkey     = new PublicKey(toWallet);
+
+  const [fromATA, toATA] = await Promise.all([
+    getAssociatedTokenAddress(mintPubkey, fromPubkey, false, TOKEN_2022_PROGRAM_ID),
+    getAssociatedTokenAddress(mintPubkey, toPubkey,   false, TOKEN_2022_PROGRAM_ID),
+  ]);
+
+  const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
+  const rawAmount = BigInt(amount) * BigInt(10 ** TOKEN_DECIMALS);
+
+  const tx = new Transaction({ recentBlockhash: blockhash, feePayer: fromPubkey });
+
+  // Ensure the creator's ATA exists — no-ops if it already does
+  tx.add(
+    createAssociatedTokenAccountIdempotentInstruction(
+      fromPubkey,             // fee payer (tipper pays for ATA creation if needed)
+      toATA,                  // the ATA address to create
+      toPubkey,               // ATA owner (creator)
+      mintPubkey,             // token mint
+      TOKEN_2022_PROGRAM_ID,
+      ASSOCIATED_TOKEN_PROGRAM_ID,
+    ),
+  );
+
+  // Transfer FIT from tipper → creator
+  tx.add(
+    createTransferCheckedInstruction(
+      fromATA,
+      mintPubkey,
+      toATA,
+      fromPubkey,
+      rawAmount,
+      TOKEN_DECIMALS,
+      [],
+      TOKEN_2022_PROGRAM_ID,
+    ),
+  );
+
   const { signature } = await provider.signAndSendTransaction(tx);
   await connection.confirmTransaction({ signature, blockhash, lastValidBlockHeight });
 

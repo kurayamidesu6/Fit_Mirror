@@ -172,7 +172,11 @@ export default function WorkoutDetail() {
             </div>
             <span className="text-xs text-muted-foreground">Creator</span>
           </div>
-          <TipCreator creatorName={workout.creator_name} workoutId={workout.id} />
+          <TipCreator
+            creatorName={workout.creator_name}
+            creatorUserId={workout.created_by || workout.user_id}
+            workoutId={workout.id}
+          />
         </div>
 
         {/* Stats row */}

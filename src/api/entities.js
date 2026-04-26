@@ -85,4 +85,5 @@ export const entities = {
   Attempt: createEntity('attempts'),
   Challenge: createEntity('challenges'),
   SavedWorkout: createEntity('saved_workouts'),
+  Tip: createEntity('tips'),
 };
