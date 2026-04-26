@@ -23,16 +23,29 @@ import { useQuery } from '@tanstack/react-query';
 
 const TIP_AMOUNTS = [5, 10, 25, 50];
 
-// Fetch creator's wallet address from their profile row
-async function fetchCreatorWallet(creatorUserId) {
-  if (!creatorUserId) return null;
-  const { data, error } = await supabase
-    .from('profiles')
-    .select('wallet_address')
-    .eq('id', creatorUserId)
-    .single();
-  if (error || !data) return null;
-  return data.wallet_address || null;
+// Fetch creator's wallet address — by user ID first, then email fallback
+async function fetchCreatorWallet(creatorUserId, creatorName) {
+  // 1. Preferred: look up by UUID
+  if (creatorUserId) {
+    const { data } = await supabase
+      .from('profiles')
+      .select('wallet_address')
+      .eq('id', creatorUserId)
+      .maybeSingle();
+    if (data?.wallet_address) return data.wallet_address;
+  }
+
+  // 2. Fallback: creator_name may be the creator's email
+  if (creatorName && creatorName.includes('@')) {
+    const { data } = await supabase
+      .from('profiles')
+      .select('wallet_address')
+      .eq('email', creatorName)
+      .maybeSingle();
+    if (data?.wallet_address) return data.wallet_address;
+  }
+
+  return null;
 }
 
 export default function TipCreator({ creatorName, creatorUserId, workoutId }) {
@@ -42,11 +55,11 @@ export default function TipCreator({ creatorName, creatorUserId, workoutId }) {
   const [status, setStatus]   = useState('idle'); // idle | sending | success | error
   const [errorMsg, setErrorMsg] = useState('');
 
-  // Fetch creator wallet lazily when panel opens
+  // Fetch creator wallet lazily when panel opens — tries UUID then email fallback
   const { data: creatorWallet, isLoading: walletLoading } = useQuery({
-    queryKey: ['creator-wallet', creatorUserId],
-    queryFn: () => fetchCreatorWallet(creatorUserId),
-    enabled: !!creatorUserId && open,
+    queryKey: ['creator-wallet', creatorUserId, creatorName],
+    queryFn: () => fetchCreatorWallet(creatorUserId, creatorName),
+    enabled: !!(creatorUserId || creatorName) && open,
     staleTime: 5 * 60 * 1000,
   });
 

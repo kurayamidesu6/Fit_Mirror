@@ -32,7 +32,10 @@ const createEntity = (tableName) => ({
 
   create: async (data) => {
     const { data: { user } } = await supabase.auth.getUser();
-    const payload = user ? { ...data, user_id: user.id } : data;
+    // Inject both user_id AND created_by so workout ownership lookups always work
+    const payload = user
+      ? { ...data, user_id: user.id, created_by: data.created_by ?? user.id }
+      : data;
     const { data: result, error } = await supabase
       .from(tableName)
       .insert(payload)
