@@ -3,6 +3,7 @@ import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 
 const CATEGORIES = [
   { value: 'all', label: 'All' },
+  { value: 'trending', label: '🔥 Trending' },
   { value: 'strength', label: '💪 Strength' },
   { value: 'cardio', label: '🏃 Cardio' },
   { value: 'hiit', label: '⚡ HIIT' },

@@ -40,8 +40,8 @@ export default function AttemptResult() {
     .slice(0, 5);
 
   return (
-    <div className="min-h-screen pb-24 pt-8">
-      <div className="max-w-lg mx-auto px-4">
+    <div className="min-h-screen pb-8 pt-8">
+      <div className="max-w-3xl mx-auto px-8">
         {/* Header */}
         <motion.div 
           initial={{ opacity: 0, y: -20 }}

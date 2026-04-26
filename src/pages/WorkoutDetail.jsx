@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { entities } from '@/api/entities';
+import { supabase } from '@/api/supabaseClient';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { ArrowLeft, Heart, Bookmark, Play, Clock, Target, BarChart3, Users, Shield } from 'lucide-react';
 import TipCreator from '@/components/shared/TipCreator';
@@ -24,16 +25,57 @@ const difficultyColors = {
 };
 
 export default function WorkoutDetail() {
-  const urlParams = new URLSearchParams(window.location.search);
   const workoutId = window.location.pathname.split('/workout/')[1];
-  const [liked, setLiked] = useState(false);
-  const [saved, setSaved] = useState(false);
+  const queryClient = useQueryClient();
 
   const { data: workout, isLoading } = useQuery({
     queryKey: ['workout', workoutId],
     queryFn: () => entities.Workout.filter({ id: workoutId }),
     select: (data) => data?.[0],
     enabled: !!workoutId,
+  });
+
+  // Check if this workout is already saved by the current user
+  const { data: existingSaved = [] } = useQuery({
+    queryKey: ['saved-check', workoutId],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return [];
+      const { data, error } = await supabase
+        .from('saved_workouts')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('workout_id', workoutId);
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!workoutId,
+  });
+
+  const isSaved = existingSaved.length > 0;
+  const savedRowId = existingSaved[0]?.id;
+
+  const saveMutation = useMutation({
+    mutationFn: async () => {
+      if (isSaved) {
+        // Unsave
+        await entities.SavedWorkout.delete(savedRowId);
+      } else {
+        // Save
+        await entities.SavedWorkout.create({
+          workout_id: workout.id,
+          workout_title: workout.title,
+          workout_category: workout.category,
+          suggested_sets: 3,
+          suggested_reps: 10,
+          thumbnail_url: workout.thumbnail_url || null,
+        });
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['saved-check', workoutId] });
+      queryClient.invalidateQueries({ queryKey: ['saved-workouts'] });
+    },
   });
 
   if (isLoading || !workout) {
@@ -47,12 +89,12 @@ export default function WorkoutDetail() {
   const image = workout.thumbnail_url || WORKOUT_IMAGES[(workout.id?.charCodeAt?.(0) || 0) % WORKOUT_IMAGES.length];
 
   return (
-    <div className="min-h-screen pb-24">
+    <div className="min-h-screen pb-8">
       {/* Hero Image */}
       <div className="relative aspect-[3/4] max-h-[60vh]">
         <img src={image} alt={workout.title} className="w-full h-full object-cover" />
         <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent" />
-        
+
         {/* Back button */}
         <Link to="/" className="absolute top-4 left-4 z-10">
           <Button variant="ghost" size="icon" className="rounded-full bg-black/30 backdrop-blur-sm hover:bg-black/50">
@@ -62,21 +104,14 @@ export default function WorkoutDetail() {
 
         {/* Action buttons */}
         <div className="absolute top-4 right-4 z-10 flex gap-2">
-          <Button 
-            variant="ghost" 
-            size="icon" 
+          <Button
+            variant="ghost"
+            size="icon"
             className="rounded-full bg-black/30 backdrop-blur-sm hover:bg-black/50"
-            onClick={() => setLiked(!liked)}
+            onClick={() => saveMutation.mutate()}
+            disabled={saveMutation.isPending}
           >
-            <Heart className={cn("w-5 h-5", liked && "fill-destructive text-destructive")} />
-          </Button>
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            className="rounded-full bg-black/30 backdrop-blur-sm hover:bg-black/50"
-            onClick={() => setSaved(!saved)}
-          >
-            <Bookmark className={cn("w-5 h-5", saved && "fill-primary text-primary")} />
+            <Bookmark className={cn("w-5 h-5 transition-colors", isSaved && "fill-primary text-primary")} />
           </Button>
         </div>
 
@@ -89,7 +124,7 @@ export default function WorkoutDetail() {
       </div>
 
       {/* Content */}
-      <div className="max-w-lg mx-auto px-4 -mt-8 relative z-10">
+      <div className="max-w-3xl mx-auto px-8 -mt-8 relative z-10">
         <div className="flex gap-2 mb-3">
           <Badge className={cn("text-xs font-semibold border-0", difficultyColors[workout.difficulty])}>
             {workout.difficulty}
@@ -141,6 +176,13 @@ export default function WorkoutDetail() {
             <h3 className="text-sm font-semibold mb-2 text-muted-foreground">About</h3>
             <p className="text-sm text-foreground/80 leading-relaxed">{workout.description}</p>
           </div>
+        )}
+
+        {/* Save status hint */}
+        {isSaved && (
+          <p className="text-xs text-primary text-center mb-4">
+            ✓ Saved — find it in your Profile → Saved tab
+          </p>
         )}
 
         {/* Try It Button */}

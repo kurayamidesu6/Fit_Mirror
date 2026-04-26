@@ -5,7 +5,21 @@
       "Bash(npm install *)",
       "Bash(npm uninstall *)",
       "Bash(npm run *)",
-      "mcp__85b1dc84-8246-4933-a33e-5310f54298cc__execute_sql"
+      "mcp__85b1dc84-8246-4933-a33e-5310f54298cc__execute_sql",
+      "Skill(update-config)",
+      "Skill(update-config:*)",
+      "Bash(xargs grep *)",
+      "Bash(python -c \"import sys,json; d=json.load\\(sys.stdin\\); [print\\(k\\) for k in d.keys\\(\\)]\")",
+      "Bash(python -c \"import sys,json; d=json.load\\(sys.stdin\\); sb=[p for p in d.get\\('plugins',[]\\) if 'supabase' in p.get\\('name',''\\).lower\\(\\)]; print\\(json.dumps\\(sb, indent=2\\)\\)\")",
+      "mcp__85b1dc84-8246-4933-a33e-5310f54298cc__list_projects",
+      "mcp__supabase__list_tables",
+      "mcp__supabase__execute_sql",
+      "mcp__supabase__get_project_url",
+      "Bash(node -e ' *)"
     ]
-  }
+  },
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": [
+    "supabase"
+  ]
 }

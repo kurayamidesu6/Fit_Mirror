@@ -61,6 +61,23 @@ const createEntity = (tableName) => ({
     if (error) throw error;
     return result;
   },
+
+  delete: async (id) => {
+    const { error } = await supabase
+      .from(tableName)
+      .delete()
+      .eq('id', id);
+    if (error) throw error;
+  },
+
+  deleteWhere: async (filters = {}) => {
+    let query = supabase.from(tableName).delete();
+    for (const [key, value] of Object.entries(filters)) {
+      query = query.eq(key, value);
+    }
+    const { error } = await query;
+    if (error) throw error;
+  },
 });
 
 export const entities = {

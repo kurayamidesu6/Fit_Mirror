@@ -9,39 +9,39 @@
     --font-inter: 'Inter', sans-serif;
     --font-space: 'Space Grotesk', sans-serif;
 
-    --background: 240 10% 3.9%;
-    --foreground: 0 0% 98%;
-    --card: 240 6% 8%;
-    --card-foreground: 0 0% 98%;
-    --popover: 240 6% 8%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 162 95% 50%;
-    --primary-foreground: 240 10% 3.9%;
-    --secondary: 240 4% 16%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 240 4% 16%;
-    --muted-foreground: 240 5% 55%;
-    --accent: 250 90% 65%;
-    --accent-foreground: 0 0% 98%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 240 4% 16%;
-    --input: 240 4% 16%;
-    --ring: 162 95% 50%;
-    --chart-1: 162 95% 50%;
-    --chart-2: 250 90% 65%;
-    --chart-3: 45 93% 58%;
-    --chart-4: 0 84% 60%;
-    --chart-5: 200 90% 55%;
+    --background: 0 0% 99%;
+    --foreground: 240 10% 8%;
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 8%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 8%;
+    --primary: 162 80% 35%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 240 5% 96%;
+    --secondary-foreground: 240 6% 30%;
+    --muted: 240 5% 96%;
+    --muted-foreground: 240 4% 46%;
+    --accent: 250 80% 58%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 84% 55%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 240 6% 90%;
+    --input: 240 6% 90%;
+    --ring: 162 80% 35%;
+    --chart-1: 162 80% 35%;
+    --chart-2: 250 80% 58%;
+    --chart-3: 38 90% 48%;
+    --chart-4: 0 84% 55%;
+    --chart-5: 200 80% 45%;
     --radius: 0.75rem;
-    --sidebar-background: 240 6% 8%;
-    --sidebar-foreground: 0 0% 98%;
-    --sidebar-primary: 162 95% 50%;
-    --sidebar-primary-foreground: 240 10% 3.9%;
-    --sidebar-accent: 240 4% 16%;
-    --sidebar-accent-foreground: 0 0% 98%;
-    --sidebar-border: 240 4% 16%;
-    --sidebar-ring: 162 95% 50%;
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 240 10% 8%;
+    --sidebar-primary: 162 80% 35%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 5% 96%;
+    --sidebar-accent-foreground: 240 6% 30%;
+    --sidebar-border: 240 6% 90%;
+    --sidebar-ring: 162 80% 35%;
   }
 
   .dark {
@@ -89,15 +89,15 @@
   }
 }
 
-/* Custom scrollbar for dark theme */
+/* Custom scrollbar */
 ::-webkit-scrollbar {
   width: 4px;
 }
 ::-webkit-scrollbar-track {
-  background: hsl(240 6% 8%);
+  background: hsl(240 5% 96%);
 }
 ::-webkit-scrollbar-thumb {
-  background: hsl(240 4% 20%);
+  background: hsl(240 6% 80%);
   border-radius: 4px;
 }
 
