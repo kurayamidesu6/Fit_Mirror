@@ -69,6 +69,7 @@ export default function TryWorkout() {
   const [userVideoUrl, setUserVideoUrl] = useState('');
   const [progressMsg, setProgressMsg]   = useState('');
   const [progressPct, setProgressPct]   = useState(0);
+  const [errorMsg, setErrorMsg]         = useState('');
 
   const refVideoRef  = useRef(null);
   const userVideoRef = useRef(null);
@@ -89,6 +90,7 @@ export default function TryWorkout() {
     const url = URL.createObjectURL(file);
     blobUrlRef.current = url;
     setUserVideoUrl(url);
+    setErrorMsg('');
   };
 
   const handleClearVideo = () => {
@@ -180,8 +182,9 @@ export default function TryWorkout() {
 
       navigate(`/result/${attempt.id}`);
     } catch (err) {
-      console.error('[TryWorkout]', err);
-      setPhase('upload'); // let user retry
+      console.error('[TryWorkout] analysis failed:', err);
+      setErrorMsg(err?.message || String(err) || 'Something went wrong. Please try again.');
+      setPhase('upload');
     }
   }, [workout, workoutId, recordTransaction, ATTEMPT_FEE, CREATOR_CUT, navigate]);
 
@@ -298,7 +301,10 @@ export default function TryWorkout() {
       </div>
 
       {/* Bottom bar */}
-      <div className="py-5 px-4 bg-black/60 backdrop-blur-sm">
+      <div className="py-5 px-4 bg-black/60 backdrop-blur-sm space-y-3">
+        {errorMsg && (
+          <p className="text-destructive text-xs text-center font-medium px-2">{errorMsg}</p>
+        )}
         {!isProcessing ? (
           <Button
             onClick={handleAnalyze}
