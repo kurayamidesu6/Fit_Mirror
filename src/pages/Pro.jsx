@@ -29,7 +29,7 @@ export default function Pro() {
 
           <div className="mt-6 rounded-xl border border-border bg-background/50 p-4 flex items-center justify-center gap-3 text-sm text-muted-foreground">
             <Coins className="w-5 h-5 text-primary" />
-            FIT coin gated access is temporarily disabled.
+            Pro content unlocks with more FIT coins in your wallet.
           </div>
 
           <Link to="/">
