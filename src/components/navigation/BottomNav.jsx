@@ -3,6 +3,7 @@ import { Flame, Plus, Swords, ShoppingBag, Crown, Trophy, LogOut, PanelLeftClose
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/lib/AuthContext';
 import { useSettings } from '@/lib/SettingsContext';
+import WalletButton from '@/components/wallet/WalletButton';
 
 const NAV_ITEMS = [
   { path: '/create', icon: Plus, label: 'Create' },
@@ -73,6 +74,8 @@ export default function SideNav({ collapsed, onCollapse }) {
 
       {/* Bottom section */}
       <div className="px-3 py-4 border-t border-border space-y-0.5">
+        <div className="px-1 pb-1">
+          <WalletButton fullWidth size="sm" /></div>
         <Link
           to="/achievements"
           className={cn(

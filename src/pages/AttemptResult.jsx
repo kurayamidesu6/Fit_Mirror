@@ -2,17 +2,20 @@ import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { entities } from '@/api/entities';
 import { useQuery } from '@tanstack/react-query';
-import { Trophy, Coins, ArrowRight, RotateCcw, Share2, Check, X, Crown } from 'lucide-react';
+import { Trophy, Coins, ArrowRight, RotateCcw, Check, X, Crown, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import ScoreRing from '@/components/shared/ScoreRing';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
+import { useWallet } from '@/lib/WalletContext';
+import { solscanTxUrl } from '@/lib/wallet';
 
 export default function AttemptResult() {
   const navigate = useNavigate();
   const attemptId = window.location.pathname.split('/result/')[1];
   const [showDetails, setShowDetails] = useState(false);
+  const { transactions, CREATOR_CUT } = useWallet();
 
   const { data: attempt, isLoading } = useQuery({
     queryKey: ['attempt', attemptId],
@@ -68,30 +71,66 @@ export default function AttemptResult() {
           <ScoreRing score={attempt.similarity_score} size={160} strokeWidth={10} passed={attempt.passed} />
         </motion.div>
 
-        {/* Reward */}
-        {showDetails && attempt.passed && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="bg-card rounded-2xl border border-primary/30 p-5 mb-6 glow-primary"
-          >
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-xl bg-primary/20 flex items-center justify-center">
-                  <Coins className="w-6 h-6 text-primary" />
+        {/* Reward + Transaction Confirmation */}
+        {showDetails && attempt.passed && (() => {
+          const rewardTx = transactions.find(tx => tx.type === 'workout_reward' && tx.workout_title === attempt.workout_title);
+          const feeTx = transactions.find(tx => tx.type === 'attempt_fee' && tx.workout_title === attempt.workout_title);
+          return (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-card rounded-2xl border border-primary/30 p-5 mb-6 glow-primary space-y-4"
+            >
+              {/* Main reward */}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-xl bg-primary/20 flex items-center justify-center">
+                    <Coins className="w-6 h-6 text-primary" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Reward Earned</p>
+                    <p className="font-space font-bold text-2xl text-primary">+{attempt.reward_earned} FIT</p>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Reward Earned</p>
-                  <p className="font-space font-bold text-2xl text-primary">+{attempt.reward_earned} FIT</p>
+                <Badge className="bg-primary/20 text-primary border-0">
+                  <Check className="w-3 h-3 mr-1" /> Confirmed
+                </Badge>
+              </div>
+
+              {/* Transaction breakdown */}
+              <div className="border-t border-border pt-3 space-y-2">
+                {rewardTx && (
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-muted-foreground">Workout reward</span>
+                    <div className="flex items-center gap-2">
+                      <a href={solscanTxUrl(rewardTx.tx_hash)} target="_blank" rel="noopener noreferrer"
+                        className="font-mono text-primary hover:underline flex items-center gap-0.5">
+                        {rewardTx.tx_hash.slice(0, 8)}…<ExternalLink className="w-2.5 h-2.5" />
+                      </a>
+                      <span className="font-bold text-primary">+{rewardTx.amount} FIT</span>
+                    </div>
+                  </div>
+                )}
+                {feeTx && (
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-muted-foreground">Attempt fee</span>
+                    <div className="flex items-center gap-2">
+                      <a href={solscanTxUrl(feeTx.tx_hash)} target="_blank" rel="noopener noreferrer"
+                        className="font-mono text-destructive hover:underline flex items-center gap-0.5">
+                        {feeTx.tx_hash.slice(0, 8)}…<ExternalLink className="w-2.5 h-2.5" />
+                      </a>
+                      <span className="font-bold text-destructive">{feeTx.amount} FIT</span>
+                    </div>
+                  </div>
+                )}
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-muted-foreground">Creator earnings</span>
+                  <span className="font-bold text-chart-3">+{CREATOR_CUT} FIT → creator</span>
                 </div>
               </div>
-              {/* Solana integration point: Show "Claimed to wallet" after tx */}
-              <Badge className="bg-primary/20 text-primary border-0">
-                <Trophy className="w-3 h-3 mr-1" /> Earned
-              </Badge>
-            </div>
-          </motion.div>
-        )}
+            </motion.div>
+          );
+        })()}
 
         {/* Feedback */}
         {showDetails && (

@@ -5,6 +5,7 @@ import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-d
 import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import { SettingsProvider } from '@/lib/SettingsContext';
+import { WalletProvider } from '@/lib/WalletContext';
 import AppLayout from '@/components/navigation/AppLayout';
 import Feed from '@/pages/Feed';
 import WorkoutDetail from '@/pages/WorkoutDetail';
@@ -55,12 +56,14 @@ function App() {
   return (
     <AuthProvider>
       <SettingsProvider>
-        <QueryClientProvider client={queryClientInstance}>
-          <Router>
-            <AuthenticatedApp />
-          </Router>
-          <Toaster />
-        </QueryClientProvider>
+        <WalletProvider>
+          <QueryClientProvider client={queryClientInstance}>
+            <Router>
+              <AuthenticatedApp />
+            </Router>
+            <Toaster />
+          </QueryClientProvider>
+        </WalletProvider>
       </SettingsProvider>
     </AuthProvider>
   );

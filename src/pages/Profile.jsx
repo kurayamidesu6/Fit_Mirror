@@ -2,23 +2,25 @@ import { useState, useEffect } from 'react';
 import { entities } from '@/api/entities';
 import { useAuth } from '@/lib/AuthContext';
 import { useQuery } from '@tanstack/react-query';
-import { Wallet, Trophy, Upload, Flame, CalendarDays, Bookmark, ChevronRight } from 'lucide-react';
+import { Wallet, Trophy, Upload, Flame, CalendarDays, Bookmark, ChevronRight, Coins } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { Badge } from '@/components/ui/badge';
 import RankBadge from '@/components/shared/RankBadge';
-import { getRank, getNextRank, getProgressToNextRank } from '@/lib/ranking';
-import { getWalletStatus } from '@/lib/rewards';
+import { getNextRank, getProgressToNextRank } from '@/lib/ranking';
 import { buildEmptySchedule } from '@/lib/scheduleUtils';
 import WeeklyCalendar from '@/components/profile/WeeklyCalendar';
 import SavedWorkoutsPanel from '@/components/profile/SavedWorkoutsPanel';
 import { Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
+import { useWallet } from '@/lib/WalletContext';
+import WalletButton from '@/components/wallet/WalletButton';
+import TransactionFeed from '@/components/wallet/TransactionFeed';
 
 const TABS = [
   { key: 'schedule', label: 'Schedule', icon: CalendarDays },
   { key: 'saved', label: 'Saved', icon: Bookmark },
   { key: 'stats', label: 'Stats', icon: Trophy },
+  { key: 'wallet', label: 'Wallet', icon: Coins },
 ];
 
 export default function Profile() {
@@ -49,13 +51,12 @@ export default function Profile() {
     queryFn: () => entities.Workout.list('-created_date', 50),
   });
 
+  const { connected, shortAddr, solBalance, fitBalance } = useWallet();
+
   const displayName = user?.user_metadata?.full_name || user?.email || 'Guest';
   const passedAttempts = attempts.filter(a => a.passed);
-  const totalRewards = attempts.reduce((sum, a) => sum + (a.reward_earned || 0), 0);
   const completedCount = passedAttempts.length;
   const uploadCount = myWorkouts.filter(w => w.created_by === user?.id).length;
-  const wallet = getWalletStatus();
-  const rank = getRank(completedCount);
   const nextRank = getNextRank(completedCount);
   const { progress, remaining } = getProgressToNextRank(completedCount);
   const scheduledDays = Object.values(schedule).filter(d => d.length > 0).length;
@@ -95,18 +96,24 @@ export default function Profile() {
           </div>
 
           {/* Wallet */}
-          <div className="bg-card rounded-2xl border border-border p-5">
-            <div className="flex items-center justify-between mb-3">
+          <div className="bg-card rounded-2xl border border-border p-5 space-y-3">
+            <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Wallet className="w-4 h-4 text-primary" />
                 <span className="text-sm font-semibold">Wallet</span>
               </div>
-              <span className="text-[10px] text-muted-foreground font-mono truncate max-w-[100px]">{wallet.address}</span>
+              {connected && (
+                <span className="text-[10px] text-muted-foreground font-mono">{shortAddr}</span>
+              )}
             </div>
             <div className="flex items-baseline gap-1">
-              <span className="font-space font-bold text-3xl text-primary">{totalRewards || wallet.balance}</span>
+              <span className="font-space font-bold text-3xl text-primary">{fitBalance}</span>
               <span className="text-sm text-muted-foreground">FIT</span>
             </div>
+            {connected && (
+              <p className="text-[10px] text-muted-foreground">{solBalance.toFixed(4)} SOL on devnet</p>
+            )}
+            <WalletButton fullWidth size="sm" />
           </div>
 
           {/* Stats */}
@@ -169,6 +176,28 @@ export default function Profile() {
           )}
 
           {activeTab === 'saved' && <SavedWorkoutsPanel />}
+
+          {activeTab === 'wallet' && (
+            <div className="space-y-5">
+              {/* Wallet summary header */}
+              <div className="bg-gradient-to-br from-primary/10 to-accent/10 rounded-2xl border border-primary/20 p-5 flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-muted-foreground mb-1">FIT Balance</p>
+                  <p className="font-space font-bold text-3xl text-primary">{fitBalance} FIT</p>
+                  {connected && (
+                    <p className="text-xs text-muted-foreground mt-1 font-mono">{shortAddr} · {solBalance.toFixed(4)} SOL</p>
+                  )}
+                </div>
+                <WalletButton />
+              </div>
+
+              {/* Transaction feed */}
+              <div>
+                <h3 className="font-semibold text-sm text-muted-foreground mb-3">Transaction History</h3>
+                <TransactionFeed limit={20} />
+              </div>
+            </div>
+          )}
 
           {activeTab === 'stats' && (
             <div className="space-y-4">

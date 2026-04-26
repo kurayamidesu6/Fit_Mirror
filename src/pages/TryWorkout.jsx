@@ -7,9 +7,11 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { performPoseComparison } from '@/lib/poseScoring';
 import IdentityCheck from '@/components/workout/IdentityCheck';
+import { useWallet } from '@/lib/WalletContext';
 
 export default function TryWorkout() {
   const navigate = useNavigate();
+  const { recordTransaction, ATTEMPT_FEE, CREATOR_CUT } = useWallet();
   const workoutId = window.location.pathname.split('/try/')[1];
   const [phase, setPhase] = useState('verify'); // verify, ready, countdown, recording, processing
   const [countdown, setCountdown] = useState(3);
@@ -50,20 +52,50 @@ export default function TryWorkout() {
 
   const handleSubmit = async () => {
     setPhase('processing');
-
     await new Promise(resolve => setTimeout(resolve, 2000));
+
+    const title = workout?.title || 'Workout';
+    const creatorName = workout?.creator_name || 'Creator';
+
+    // Charge attempt fee regardless of outcome
+    await recordTransaction({
+      type: 'attempt_fee',
+      amount: -ATTEMPT_FEE,
+      description: `Attempt Fee: ${title}`,
+      workoutId,
+      workoutTitle: title,
+    });
 
     const result = performPoseComparison(workout);
 
     const attempt = await entities.Attempt.create({
       workout_id: workoutId,
-      workout_title: workout?.title || 'Workout',
+      workout_title: title,
       similarity_score: result.similarity_score,
       passed: result.passed,
       reward_earned: result.reward_earned,
       feedback: result.feedback,
       joint_scores: result.joint_scores,
     });
+
+    if (result.passed) {
+      // Credit user reward
+      await recordTransaction({
+        type: 'workout_reward',
+        amount: result.reward_earned,
+        description: `Workout Passed: ${title}`,
+        workoutId,
+        workoutTitle: title,
+      });
+      // Record creator earnings (informational — excluded from user balance)
+      await recordTransaction({
+        type: 'creator_reward',
+        amount: CREATOR_CUT,
+        description: `Creator Earnings → ${creatorName}`,
+        workoutId,
+        workoutTitle: title,
+      });
+    }
 
     navigate(`/result/${attempt.id}`);
   };

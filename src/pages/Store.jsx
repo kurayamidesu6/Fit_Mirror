@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { entities } from '@/api/entities';
-import { useQuery } from '@tanstack/react-query';
 import { ShoppingBag, Zap, Star, Coins, ExternalLink } from 'lucide-react';
+import { useWallet } from '@/lib/WalletContext';
+import { solscanTokenUrl, TOKEN_MINT_ADDRESS } from '@/lib/wallet';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
@@ -85,19 +85,19 @@ function StoreCard({ item, userBalance, onBuy, purchased }) {
 export default function Store() {
   const [category, setCategory] = useState('all');
   const [purchased, setPurchased] = useState([]);
+  const { fitBalance, recordTransaction, tokenSymbol } = useWallet();
 
-  const { data: attempts = [] } = useQuery({
-    queryKey: ['my-attempts'],
-    queryFn: () => entities.Attempt.list('-created_date', 100),
-  });
-
-  const totalRewards = attempts.reduce((s, a) => s + (a.reward_earned || 0), 0);
   const filtered = category === 'all' ? STORE_ITEMS : STORE_ITEMS.filter(i => i.category === category);
 
   const handleBuy = (item) => {
     if (purchased.includes(item.id)) return;
     setPurchased(prev => [...prev, item.id]);
-    toast.success(`Purchased: ${item.name}`, { description: `−${item.price_fit} FIT from your balance` });
+    recordTransaction({
+      type: 'purchase',
+      amount: -item.price_fit,
+      description: `Store: ${item.name}`,
+    });
+    toast.success(`Purchased: ${item.name}`, { description: `−${item.price_fit} ${tokenSymbol} from your balance` });
   };
 
   return (
@@ -116,25 +116,31 @@ export default function Store() {
           </div>
           <div className="flex items-center gap-2 bg-card border border-border rounded-full px-4 py-2">
             <Zap className="w-4 h-4 text-primary" />
-            <span className="font-bold text-primary">{totalRewards} FIT</span>
+            <span className="font-bold text-primary">{fitBalance} {tokenSymbol}</span>
             <span className="text-sm text-muted-foreground">available</span>
           </div>
         </div>
       </div>
 
       <div className="px-8 py-6">
-        {/* Exchange banner */}
-        <div className="bg-gradient-to-r from-accent/10 to-primary/10 rounded-2xl border border-accent/20 p-5 mb-6 flex items-center justify-between">
+        {/* Token banner */}
+        <a
+          href={solscanTokenUrl(TOKEN_MINT_ADDRESS)}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="bg-gradient-to-r from-accent/10 to-primary/10 rounded-2xl border border-accent/20 p-5 mb-6 flex items-center justify-between hover:border-accent/40 transition-colors"
+        >
           <div>
             <div className="flex items-center gap-2 mb-1">
               <Coins className="w-4 h-4 text-accent" />
-              <p className="font-bold">FIT → SOL Exchange</p>
-              <Badge className="bg-accent/20 text-accent border-0 text-[10px]">DEMO</Badge>
+              <p className="font-bold">{tokenSymbol} Token on Solana Devnet</p>
             </div>
-            <p className="text-sm text-muted-foreground">Future: redeem Fit Points for real Solana tokens. Mock prices shown above.</p>
+            <p className="text-sm text-muted-foreground">
+              Your wallet balance is read live from chain. Spend {tokenSymbol} here to unlock perks.
+            </p>
           </div>
           <ExternalLink className="w-5 h-5 text-muted-foreground flex-shrink-0" />
-        </div>
+        </a>
 
         {/* Category filter */}
         <div className="flex gap-2 mb-6">

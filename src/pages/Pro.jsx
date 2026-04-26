@@ -1,13 +1,14 @@
 import { entities } from '@/api/entities';
 import { useQuery } from '@tanstack/react-query';
-import { Crown, Lock, Shield, Play, Flame } from 'lucide-react';
+import { Crown, Lock, Shield, Play, Flame, Coins } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
-import { isProUnlocked, PRO_UNLOCK_THRESHOLD } from '@/lib/ranking';
+import { PRO_UNLOCK_THRESHOLD } from '@/lib/ranking';
 import { motion } from 'framer-motion';
+import { useWallet } from '@/lib/WalletContext';
 
 const PRO_IMAGES = [
   'https://images.unsplash.com/photo-1550345332-09e3ac987658?w=600&h=400&fit=crop',
@@ -83,10 +84,16 @@ export default function Pro() {
     queryFn: () => entities.Workout.filter({ is_pro: true }, '-created_date', 20),
   });
 
+  const { fitBalance, PRO_TOKEN_THRESHOLD } = useWallet();
   const completedCount = attempts.filter(a => a.passed).length;
-  const unlocked = isProUnlocked(completedCount);
-  const progress = Math.min(100, (completedCount / PRO_UNLOCK_THRESHOLD) * 100);
-  const remaining = Math.max(0, PRO_UNLOCK_THRESHOLD - completedCount);
+  // Unlock via workouts completed OR FIT tokens held
+  const unlockedByWorkouts = completedCount >= PRO_UNLOCK_THRESHOLD;
+  const unlockedByTokens = fitBalance >= PRO_TOKEN_THRESHOLD;
+  const unlocked = unlockedByWorkouts || unlockedByTokens;
+  const workoutProgress = Math.min(100, (completedCount / PRO_UNLOCK_THRESHOLD) * 100);
+  const tokenProgress = Math.min(100, (fitBalance / PRO_TOKEN_THRESHOLD) * 100);
+  const workoutsRemaining = Math.max(0, PRO_UNLOCK_THRESHOLD - completedCount);
+  const tokensRemaining = Math.max(0, PRO_TOKEN_THRESHOLD - fitBalance);
 
   return (
     <div className="min-h-screen">
@@ -109,24 +116,49 @@ export default function Pro() {
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-gradient-to-br from-accent/10 to-primary/5 rounded-2xl border border-accent/20 p-6 mb-8 flex gap-8 items-center"
+            className="bg-gradient-to-br from-accent/10 to-primary/5 rounded-2xl border border-accent/20 p-6 mb-8"
           >
-            <div className="w-16 h-16 rounded-2xl bg-accent/20 flex items-center justify-center flex-shrink-0">
-              <Lock className="w-8 h-8 text-accent" />
-            </div>
-            <div className="flex-1">
-              <h2 className="font-bold text-lg mb-1">Unlock Pro Content</h2>
-              <p className="text-sm text-muted-foreground mb-4">
-                Complete {remaining} more workout{remaining !== 1 ? 's' : ''} successfully to unlock all Pro content.
-              </p>
-              <div className="flex items-center gap-4 mb-2">
-                <Progress value={progress} className="flex-1 h-3" />
-                <span className="font-bold text-accent text-sm whitespace-nowrap">{completedCount}/{PRO_UNLOCK_THRESHOLD}</span>
+            <div className="flex items-center gap-3 mb-5">
+              <div className="w-12 h-12 rounded-2xl bg-accent/20 flex items-center justify-center flex-shrink-0">
+                <Lock className="w-6 h-6 text-accent" />
+              </div>
+              <div>
+                <h2 className="font-bold text-lg">Unlock Pro Content</h2>
+                <p className="text-sm text-muted-foreground">Complete either path to get instant access</p>
               </div>
             </div>
+
+            <div className="grid grid-cols-2 gap-4 mb-5">
+              {/* Path 1 — workouts */}
+              <div className="bg-background/50 rounded-xl p-4 border border-border">
+                <div className="flex items-center gap-2 mb-2">
+                  <Flame className="w-4 h-4 text-primary" />
+                  <span className="text-sm font-semibold">Complete Workouts</span>
+                </div>
+                <p className="text-xs text-muted-foreground mb-3">
+                  {workoutsRemaining > 0 ? `${workoutsRemaining} more to go` : 'Done!'}
+                </p>
+                <Progress value={workoutProgress} className="h-2 mb-1" />
+                <p className="text-[10px] text-muted-foreground text-right">{completedCount}/{PRO_UNLOCK_THRESHOLD}</p>
+              </div>
+
+              {/* Path 2 — tokens */}
+              <div className="bg-background/50 rounded-xl p-4 border border-border">
+                <div className="flex items-center gap-2 mb-2">
+                  <Coins className="w-4 h-4 text-chart-3" />
+                  <span className="text-sm font-semibold">Hold FIT Tokens</span>
+                </div>
+                <p className="text-xs text-muted-foreground mb-3">
+                  {tokensRemaining > 0 ? `${tokensRemaining} FIT to go` : 'Done!'}
+                </p>
+                <Progress value={tokenProgress} className="h-2 mb-1" />
+                <p className="text-[10px] text-muted-foreground text-right">{fitBalance}/{PRO_TOKEN_THRESHOLD} FIT</p>
+              </div>
+            </div>
+
             <Link to="/">
-              <Button className="h-11 px-6 rounded-xl bg-accent hover:bg-accent/90 text-accent-foreground font-semibold flex-shrink-0">
-                <Flame className="w-4 h-4 mr-2" /> Browse Workouts
+              <Button className="h-11 px-6 rounded-xl bg-accent hover:bg-accent/90 text-accent-foreground font-semibold">
+                <Flame className="w-4 h-4 mr-2" /> Start Earning FIT
               </Button>
             </Link>
           </motion.div>

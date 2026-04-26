@@ -65,8 +65,8 @@ export function performPoseComparison(workout) {
     ? `Great form! Your overall movement matched ${score}% of the reference. Keep up the excellent work!`
     : `Good effort! Focus on improving your ${weakJoints[0]} and ${weakJoints[1]} alignment. Try watching the reference video again and pay attention to the form.`;
 
-  // Calculate reward (mocked — Solana integration point)
-  const reward = passed ? Math.floor(score * 0.5) + (score > 90 ? 25 : 0) : 0;
+  // FIT token reward: +5 base, +5 performance bonus if score > 85
+  const reward = passed ? (score > 85 ? 10 : 5) : 0;
 
   return {
     similarity_score: score,
