@@ -1,7 +1,9 @@
+import { useEffect } from 'react';
 import { Toaster } from "@/components/ui/toaster"
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
+import { loadFaceModels } from '@/lib/faceApi';
 import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import { SettingsProvider } from '@/lib/SettingsContext';
@@ -22,6 +24,14 @@ import Login from '@/pages/Login';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isAuthenticated } = useAuth();
+
+  // Kick off model loading in the background as soon as auth resolves so that
+  // by the time the user navigates to a workout, both models are already warm.
+  useEffect(() => {
+    if (isLoadingAuth) return;
+    loadFaceModels().catch(() => {});
+    import('@/lib/poseDetection').then(m => m.loadPoseDetector()).catch(() => {});
+  }, [isLoadingAuth]);
 
   if (isLoadingAuth) {
     return (

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { entities } from '@/api/entities';
 import { useAuth } from '@/lib/AuthContext';
 import { useQuery } from '@tanstack/react-query';
-import { Wallet, Trophy, Upload, Flame, CalendarDays, Bookmark, ChevronRight, Coins } from 'lucide-react';
+import { Wallet, Trophy, Upload, Flame, CalendarDays, Bookmark, ChevronRight, Coins, ShieldCheck, ShieldAlert } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import RankBadge from '@/components/shared/RankBadge';
@@ -10,11 +10,13 @@ import { getNextRank, getProgressToNextRank } from '@/lib/ranking';
 import { buildEmptySchedule } from '@/lib/scheduleUtils';
 import WeeklyCalendar from '@/components/profile/WeeklyCalendar';
 import SavedWorkoutsPanel from '@/components/profile/SavedWorkoutsPanel';
+import FaceEnrollment from '@/components/profile/FaceEnrollment';
 import { Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { useWallet } from '@/lib/WalletContext';
 import WalletButton from '@/components/wallet/WalletButton';
 import TransactionFeed from '@/components/wallet/TransactionFeed';
+import { isEnrolled } from '@/lib/faceDescriptor';
 
 const TABS = [
   { key: 'schedule', label: 'Schedule', icon: CalendarDays },
@@ -52,6 +54,13 @@ export default function Profile() {
   });
 
   const { connected, shortAddr, solBalance, fitBalance } = useWallet();
+
+  const [showEnrollment, setShowEnrollment] = useState(false);
+  const { data: enrolled, refetch: refetchEnrolled } = useQuery({
+    queryKey: ['face-enrolled'],
+    queryFn: isEnrolled,
+    enabled: !!user,
+  });
 
   const displayName = user?.user_metadata?.full_name || user?.email || 'Guest';
   const passedAttempts = attempts.filter(a => a.passed);
@@ -143,6 +152,46 @@ export default function Profile() {
               <Progress value={progress} className="h-2" />
             </div>
           )}
+
+          {/* Face Verification */}
+          <div className={cn(
+            'rounded-2xl border p-5 space-y-3',
+            enrolled ? 'bg-primary/5 border-primary/20' : 'bg-card border-border'
+          )}>
+            <div className="flex items-center gap-2">
+              {enrolled
+                ? <ShieldCheck className="w-4 h-4 text-primary" />
+                : <ShieldAlert className="w-4 h-4 text-muted-foreground" />
+              }
+              <span className="text-sm font-semibold">Face Verification</span>
+            </div>
+            {enrolled ? (
+              <>
+                <p className="text-xs text-primary font-medium">✓ Enrolled — identity check active</p>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="w-full rounded-xl text-xs"
+                  onClick={() => setShowEnrollment(true)}
+                >
+                  Re-enroll Face
+                </Button>
+              </>
+            ) : (
+              <>
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  Required before attempting workouts. Takes about 10 seconds.
+                </p>
+                <Button
+                  size="sm"
+                  className="w-full rounded-xl font-semibold"
+                  onClick={() => setShowEnrollment(true)}
+                >
+                  Set Up Now
+                </Button>
+              </>
+            )}
+          </div>
         </div>
 
         {/* Right panel — tabs */}
@@ -240,6 +289,17 @@ export default function Profile() {
           )}
         </div>
       </div>
+
+      {/* Face Enrollment Modal */}
+      {showEnrollment && (
+        <FaceEnrollment
+          onEnrolled={() => {
+            setShowEnrollment(false);
+            refetchEnrolled();
+          }}
+          onClose={() => setShowEnrollment(false)}
+        />
+      )}
     </div>
   );
 }

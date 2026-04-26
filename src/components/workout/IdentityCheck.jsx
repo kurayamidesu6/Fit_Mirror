@@ -1,74 +1,135 @@
-import { useState, useEffect } from 'react';
-import { Shield, CheckCircle2, XCircle, Loader2, Eye, Camera } from 'lucide-react';
+/**
+ * IdentityCheck — real face verification gate before workout attempts.
+ *
+ * Flow:
+ *  intro → loadingModels → camera → comparing → result
+ *
+ * Uses face-api.js to:
+ *  1. Load the stored descriptor from Supabase (enrolled on Profile)
+ *  2. Open webcam + detect live face
+ *  3. Compare euclidean distance between descriptors
+ *  4. Pass if confidence ≥ MATCH_THRESHOLD, else block
+ */
+import { useState, useRef, useEffect } from 'react';
+import { Shield, CheckCircle2, XCircle, Loader2, Camera, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
 import {
-  getRandomLivenessPrompt,
-  runFaceMatch,
-  runLivenessCheck,
-  computeVerificationResult,
-} from '@/lib/identityVerification';
+  loadFaceModels,
+  captureDescriptor,
+  compareDescriptors,
+  MATCH_THRESHOLD,
+  startWebcam,
+  stopStream,
+} from '@/lib/faceApi';
+import { getStoredDescriptor } from '@/lib/faceDescriptor';
 import { motion, AnimatePresence } from 'framer-motion';
 
-/**
- * Identity Verification Flow component.
- * MOCK — structured for real MediaPipe / face-recognition integration.
- * Steps: face match → liveness prompt → result
- */
 export default function IdentityCheck({ onPassed, onFailed }) {
-  const [step, setStep] = useState('intro'); // intro | face | liveness | result
-  const [livenessPrompt] = useState(getRandomLivenessPrompt);
-  const [faceResult, setFaceResult] = useState(null);
-  const [livenessResult, setLivenessResult] = useState(null);
-  const [verificationResult, setVerificationResult] = useState(null);
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [countdown, setCountdown] = useState(null);
+  const [step, setStep] = useState('intro'); // intro | loading | camera | comparing | result
+  const [confidence, setConfidence] = useState(0);
+  const [passed, setPassed] = useState(false);
+  const [errorMsg, setErrorMsg] = useState('');
+  const [faceDetected, setFaceDetected] = useState(false);
+  const [storedDescriptor, setStoredDescriptor] = useState(null);
 
-  const runFaceStep = async () => {
-    setStep('face');
-    setIsProcessing(true);
-    // INTEGRATION POINT: capture live frame from camera feed and compare to enrolled selfie
-    const result = await runFaceMatch(null, null);
-    setFaceResult(result);
-    setIsProcessing(false);
-    // Auto-proceed to liveness
-    setTimeout(() => setStep('liveness'), 800);
-  };
+  const videoRef = useRef(null);
+  const streamRef = useRef(null);
+  const pollRef = useRef(null);
 
-  const runLivenessStep = async () => {
-    setIsProcessing(true);
-    // Start countdown
-    let count = 3;
-    setCountdown(count);
-    await new Promise(r => {
-      const interval = setInterval(() => {
-        count--;
-        setCountdown(count);
-        if (count === 0) { clearInterval(interval); r(); }
-      }, 700);
-    });
-    setCountdown(null);
-    // INTEGRATION POINT: ML model verifies liveness gesture was performed
-    const result = await runLivenessCheck(livenessPrompt.id);
-    setLivenessResult(result);
-    setIsProcessing(false);
-    // Compute combined result
-    const combined = computeVerificationResult(
-      faceResult || { match: true, confidence: 90 },
-      result,
-      { isDuplicate: false }
-    );
-    setVerificationResult(combined);
-    setStep('result');
-  };
+  useEffect(() => {
+    return () => {
+      clearInterval(pollRef.current);
+      stopStream(streamRef.current);
+    };
+  }, []);
 
-  const handleResult = () => {
-    if (verificationResult?.passed) {
-      onPassed();
-    } else {
-      onFailed();
+  const handleBegin = async () => {
+    setStep('loading');
+    setErrorMsg('');
+
+    try {
+      // Load models + fetch stored descriptor in parallel
+      const [, descriptor] = await Promise.all([
+        loadFaceModels(),
+        getStoredDescriptor(),
+      ]);
+
+      if (!descriptor) {
+        setErrorMsg('No face enrolled on your profile. Go to Profile → set up face verification first.');
+        setStep('error');
+        return;
+      }
+
+      setStoredDescriptor(descriptor);
+      // Switch to camera step — webcam starts after React renders the <video>
+      setStep('camera');
+    } catch (err) {
+      console.error('[IdentityCheck]', err);
+      setErrorMsg(err.message || 'Camera access denied. Check browser permissions.');
+      setStep('error');
     }
+  };
+
+  // Start webcam AFTER React has mounted the <video> element
+  useEffect(() => {
+    if (step !== 'camera') return;
+    let cancelled = false;
+
+    const initCamera = async () => {
+      try {
+        const stream = await startWebcam(videoRef.current);
+        if (cancelled) { stopStream(stream); return; }
+        streamRef.current = stream;
+
+        pollRef.current = setInterval(async () => {
+          if (!videoRef.current) return;
+          const desc = await captureDescriptor(videoRef.current).catch(() => null);
+          setFaceDetected(!!desc);
+        }, 600);
+      } catch (err) {
+        console.error('[IdentityCheck] camera error:', err);
+        setErrorMsg(err.message || 'Camera access denied. Check browser permissions.');
+        setStep('error');
+      }
+    };
+
+    initCamera();
+    return () => { cancelled = true; };
+  }, [step]);
+
+  const handleVerify = async () => {
+    clearInterval(pollRef.current);
+    setStep('comparing');
+
+    try {
+      const liveDescriptor = await captureDescriptor(videoRef.current);
+      stopStream(streamRef.current);
+
+      if (!liveDescriptor) {
+        setErrorMsg('No face detected in frame. Try again in better lighting.');
+        setStep('error');
+        return;
+      }
+
+      const score = compareDescriptors(storedDescriptor, liveDescriptor);
+      setConfidence(score);
+      setPassed(score >= MATCH_THRESHOLD);
+      setStep('result');
+    } catch (err) {
+      console.error('[IdentityCheck] verify error:', err);
+      setErrorMsg('Verification failed. Please try again.');
+      setStep('error');
+    }
+  };
+
+  const handleRetry = () => {
+    setStep('intro');
+    setErrorMsg('');
+    setFaceDetected(false);
+    setConfidence(0);
+    stopStream(streamRef.current);
   };
 
   return (
@@ -79,127 +140,153 @@ export default function IdentityCheck({ onPassed, onFailed }) {
     >
       <div className="w-full max-w-sm">
         {/* Header */}
-        <div className="text-center mb-8">
+        <div className="text-center mb-6">
           <div className="w-14 h-14 rounded-2xl bg-primary/20 flex items-center justify-center mx-auto mb-3">
             <Shield className="w-7 h-7 text-primary" />
           </div>
-          <h2 className="font-space font-bold text-xl">Identity Check</h2>
-          <p className="text-sm text-muted-foreground mt-1">Anti-cheat verification required</p>
+          <h2 className="font-space font-bold text-xl text-white">Identity Check</h2>
+          <p className="text-sm text-white/50 mt-1">Confirm it's you before the attempt</p>
         </div>
 
-        {/* Step: Intro */}
-        {step === 'intro' && (
-          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
-            {[
-              { icon: Camera, text: 'Face recognition match', sub: 'Confirms you are the registered user' },
-              { icon: Eye, text: 'Liveness detection', sub: 'Prevents pre-recorded replay attacks' },
-              { icon: Shield, text: 'Session integrity', sub: 'Secure in-app recording only' },
-            ].map(({ icon: Icon, text, sub }) => (
-              <div key={text} className="flex items-start gap-3 bg-card/50 rounded-xl p-3">
-                <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center flex-shrink-0">
-                  <Icon className="w-4 h-4 text-primary" />
+        <AnimatePresence mode="sync">
+          {/* Intro */}
+          {step === 'intro' && (
+            <motion.div key="intro" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="space-y-3">
+              {[
+                { icon: Camera, text: 'Face recognition match', sub: 'Compares you to your enrolled profile' },
+                { icon: Shield, text: 'Anti-cheat protection', sub: 'Prevents someone else from attempting for you' },
+              ].map(({ icon: Icon, text, sub }) => (
+                <div key={text} className="flex items-start gap-3 bg-white/5 rounded-xl p-3">
+                  <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center flex-shrink-0">
+                    <Icon className="w-4 h-4 text-primary" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-white">{text}</p>
+                    <p className="text-xs text-white/50">{sub}</p>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-sm font-medium">{text}</p>
-                  <p className="text-xs text-muted-foreground">{sub}</p>
-                </div>
-              </div>
-            ))}
-            <Button onClick={runFaceStep} className="w-full h-12 rounded-xl bg-primary font-bold mt-2">
-              Begin Verification
-            </Button>
-          </motion.div>
-        )}
-
-        {/* Step: Face Match */}
-        {step === 'face' && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center space-y-4">
-            <div className="w-40 h-40 rounded-full border-4 border-primary/40 mx-auto flex items-center justify-center bg-card/30">
-              {isProcessing ? (
-                <Loader2 className="w-10 h-10 text-primary animate-spin" />
-              ) : (
-                <CheckCircle2 className="w-10 h-10 text-primary" />
-              )}
-            </div>
-            <div>
-              <p className="font-semibold">
-                {isProcessing ? 'Scanning face...' : `Match: ${faceResult?.confidence}%`}
-              </p>
-              <p className="text-xs text-muted-foreground mt-1">
-                {/* INTEGRATION POINT: real MediaPipe FaceMesh results */}
-                Comparing to enrolled identity reference
-              </p>
-            </div>
-            {!isProcessing && faceResult && (
-              <Progress value={faceResult.confidence} className="h-2" />
-            )}
-          </motion.div>
-        )}
-
-        {/* Step: Liveness */}
-        {step === 'liveness' && (
-          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="text-center space-y-6">
-            <div className="w-28 h-28 rounded-full border-4 border-accent/60 mx-auto flex items-center justify-center bg-card/30 text-5xl">
-              {livenessPrompt.icon}
-            </div>
-            <div>
-              <p className="text-xs text-muted-foreground uppercase tracking-wider mb-2">Liveness Prompt</p>
-              <p className="font-space font-bold text-xl">{livenessPrompt.instruction}</p>
-              <p className="text-xs text-muted-foreground mt-1">Perform this action live to continue</p>
-            </div>
-            {countdown !== null && (
-              <div className="text-4xl font-space font-bold text-primary">{countdown}</div>
-            )}
-            {!isProcessing && countdown === null && (
-              <Button onClick={runLivenessStep} className="w-full h-12 rounded-xl bg-accent text-accent-foreground font-bold">
-                I'm Ready — Start Check
+              ))}
+              <Button onClick={handleBegin} className="w-full h-12 rounded-xl bg-primary font-bold mt-2">
+                Begin Verification
               </Button>
-            )}
-            {isProcessing && countdown === null && (
-              <div className="flex items-center justify-center gap-2 text-muted-foreground">
-                <Loader2 className="w-4 h-4 animate-spin" />
-                <span className="text-sm">Verifying...</span>
-              </div>
-            )}
-          </motion.div>
-        )}
+            </motion.div>
+          )}
 
-        {/* Step: Result */}
-        {step === 'result' && verificationResult && (
-          <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="text-center space-y-5">
-            <div className={cn(
-              'w-20 h-20 rounded-full mx-auto flex items-center justify-center',
-              verificationResult.passed ? 'bg-primary/20' : 'bg-destructive/20'
-            )}>
-              {verificationResult.passed
-                ? <CheckCircle2 className="w-10 h-10 text-primary" />
-                : <XCircle className="w-10 h-10 text-destructive" />
-              }
-            </div>
-            <div>
-              <p className="font-space font-bold text-xl">
-                {verificationResult.passed ? 'Identity Confirmed' : 'Verification Failed'}
-              </p>
-              <p className="text-sm text-muted-foreground mt-1">
-                Confidence: {verificationResult.confidence}% · Risk: {verificationResult.riskLevel}
-              </p>
-              {!verificationResult.passed && verificationResult.signals.length > 0 && (
-                <p className="text-xs text-destructive mt-2">
-                  Issues: {verificationResult.signals.join(', ')}
+          {/* Loading models */}
+          {step === 'loading' && (
+            <motion.div key="loading" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center py-8 space-y-3">
+              <Loader2 className="w-10 h-10 text-primary animate-spin mx-auto" />
+              <p className="font-medium text-white">Loading face recognition…</p>
+              <p className="text-xs text-white/40">First time may take a few seconds</p>
+            </motion.div>
+          )}
+
+          {/* Camera live feed */}
+          {step === 'camera' && (
+            <motion.div key="camera" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
+              <div className="relative rounded-xl overflow-hidden bg-black aspect-video">
+                <video
+                  ref={videoRef}
+                  autoPlay
+                  muted
+                  playsInline
+                  className="w-full h-full object-cover scale-x-[-1]"
+                />
+                {/* Oval guide */}
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                  <div className={cn(
+                    'w-32 h-40 rounded-full border-4 transition-colors duration-300',
+                    faceDetected ? 'border-primary' : 'border-white/30'
+                  )} />
+                </div>
+                <div className={cn(
+                  'absolute bottom-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap transition-colors',
+                  faceDetected ? 'bg-primary text-primary-foreground' : 'bg-black/60 text-white'
+                )}>
+                  {faceDetected ? '✓ Face detected' : 'Move closer · face the camera · good lighting'}
+                </div>
+              </div>
+              <Button
+                onClick={handleVerify}
+                disabled={!faceDetected}
+                className="w-full h-12 rounded-xl font-bold"
+              >
+                Verify My Identity
+              </Button>
+            </motion.div>
+          )}
+
+          {/* Comparing */}
+          {step === 'comparing' && (
+            <motion.div key="comparing" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center py-8 space-y-3">
+              <Loader2 className="w-10 h-10 text-primary animate-spin mx-auto" />
+              <p className="font-medium text-white">Comparing face data…</p>
+            </motion.div>
+          )}
+
+          {/* Result */}
+          {step === 'result' && (
+            <motion.div key="result" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="text-center space-y-5">
+              <div className={cn(
+                'w-20 h-20 rounded-full mx-auto flex items-center justify-center',
+                passed ? 'bg-primary/20' : 'bg-destructive/20'
+              )}>
+                {passed
+                  ? <CheckCircle2 className="w-10 h-10 text-primary" />
+                  : <XCircle className="w-10 h-10 text-destructive" />
+                }
+              </div>
+              <div>
+                <p className="font-space font-bold text-xl text-white">
+                  {passed ? 'Identity Confirmed' : 'Verification Failed'}
+                </p>
+                <p className="text-sm text-white/50 mt-1">Match confidence: {confidence}%</p>
+              </div>
+              <Progress
+                value={confidence}
+                className={cn('h-2', !passed && '[&>div]:bg-destructive')}
+              />
+              {!passed && (
+                <p className="text-xs text-white/40">
+                  Score {confidence}% is below the {MATCH_THRESHOLD}% threshold.
+                  Try better lighting or re-enroll your face on the Profile page.
                 </p>
               )}
-            </div>
-            <Button
-              onClick={handleResult}
-              className={cn(
-                'w-full h-12 rounded-xl font-bold',
-                verificationResult.passed ? 'bg-primary text-primary-foreground' : 'bg-destructive text-white'
-              )}
-            >
-              {verificationResult.passed ? 'Continue to Workout' : 'Try Again'}
-            </Button>
-          </motion.div>
-        )}
+              <div className="flex gap-3">
+                {!passed && (
+                  <Button onClick={handleRetry} variant="outline" className="flex-1 h-11 rounded-xl gap-2">
+                    <RefreshCw className="w-4 h-4" /> Retry
+                  </Button>
+                )}
+                <Button
+                  onClick={passed ? onPassed : onFailed}
+                  className={cn(
+                    'flex-1 h-11 rounded-xl font-bold',
+                    passed ? 'bg-primary text-primary-foreground' : 'bg-destructive text-white'
+                  )}
+                >
+                  {passed ? 'Continue to Workout' : 'Go Back'}
+                </Button>
+              </div>
+            </motion.div>
+          )}
+
+          {/* Error */}
+          {step === 'error' && (
+            <motion.div key="error" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center space-y-4">
+              <XCircle className="w-12 h-12 text-destructive mx-auto" />
+              <p className="text-sm text-white/70">{errorMsg}</p>
+              <div className="flex gap-3">
+                <Button onClick={handleRetry} variant="outline" className="flex-1 h-11 rounded-xl gap-2">
+                  <RefreshCw className="w-4 h-4" /> Retry
+                </Button>
+                <Button onClick={onFailed} className="flex-1 h-11 rounded-xl bg-destructive text-white">
+                  Go Back
+                </Button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </motion.div>
   );

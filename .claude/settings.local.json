@@ -15,7 +15,22 @@
       "mcp__supabase__list_tables",
       "mcp__supabase__execute_sql",
       "mcp__supabase__get_project_url",
-      "Bash(node -e ' *)"
+      "Bash(node -e ' *)",
+      "Bash(npm list *)",
+      "Bash(curl -s -o ssd_mobilenetv1_model-weights_manifest.json \"https://raw.githubusercontent.com/justadudewhohacks/face-api.js/master/weights/ssd_mobilenetv1_model-weights_manifest.json\")",
+      "Bash(curl -s -o 'C:\\\\Users\\\\Sam19\\\\Fit_Mirror\\\\public\\\\models/ssd_mobilenetv1_model-shard1' https://raw.githubusercontent.com/justadudewhohacks/face-api.js/master/weights/ssd_mobilenetv1_model-shard1)",
+      "Bash(curl -s -o 'C:\\\\Users\\\\Sam19\\\\Fit_Mirror\\\\public\\\\models/ssd_mobilenetv1_model-shard2' https://raw.githubusercontent.com/justadudewhohacks/face-api.js/master/weights/ssd_mobilenetv1_model-shard2)",
+      "Bash(curl -s -o 'C:\\\\Users\\\\Sam19\\\\Fit_Mirror\\\\public\\\\models/face_landmark_68_model-weights_manifest.json' https://raw.githubusercontent.com/justadudewhohacks/face-api.js/master/weights/face_landmark_68_model-weights_manifest.json)",
+      "Bash(curl -s -o 'C:\\\\Users\\\\Sam19\\\\Fit_Mirror\\\\public\\\\models/face_landmark_68_model-shard1' https://raw.githubusercontent.com/justadudewhohacks/face-api.js/master/weights/face_landmark_68_model-shard1)",
+      "Bash(curl -s -o 'C:\\\\Users\\\\Sam19\\\\Fit_Mirror\\\\public\\\\models/face_recognition_model-weights_manifest.json' https://raw.githubusercontent.com/justadudewhohacks/face-api.js/master/weights/face_recognition_model-weights_manifest.json)",
+      "Bash(curl -s -o 'C:\\\\Users\\\\Sam19\\\\Fit_Mirror\\\\public\\\\models/face_recognition_model-shard1' https://raw.githubusercontent.com/justadudewhohacks/face-api.js/master/weights/face_recognition_model-shard1)",
+      "Bash(npx vite *)",
+      "Bash(node -e \"const f = require\\('@vladmandic/face-api'\\); console.log\\(Object.keys\\(f.nets\\)\\)\")",
+      "Bash(cp \"C:\\\\Users\\\\Sam19\\\\Fit_Mirror\\\\node_modules\\\\@vladmandic\\\\face-api\\\\model\\\\ssd_mobilenetv1_model.bin\" \"C:\\\\Users\\\\Sam19\\\\Fit_Mirror\\\\public\\\\models\\\\\" && cp \"C:\\\\Users\\\\Sam19\\\\Fit_Mirror\\\\node_modules\\\\@vladmandic\\\\face-api\\\\model\\\\ssd_mobilenetv1_model-weights_manifest.json\" \"C:\\\\Users\\\\Sam19\\\\Fit_Mirror\\\\public\\\\models\\\\\")",
+      "Bash(cp \"C:\\\\Users\\\\Sam19\\\\Fit_Mirror\\\\node_modules\\\\@vladmandic\\\\face-api\\\\model\\\\face_landmark_68_model.bin\" \"C:\\\\Users\\\\Sam19\\\\Fit_Mirror\\\\public\\\\models\\\\\" && cp \"C:\\\\Users\\\\Sam19\\\\Fit_Mirror\\\\node_modules\\\\@vladmandic\\\\face-api\\\\model\\\\face_landmark_68_model-weights_manifest.json\" \"C:\\\\Users\\\\Sam19\\\\Fit_Mirror\\\\public\\\\models\\\\\")",
+      "Bash(cp \"C:\\\\Users\\\\Sam19\\\\Fit_Mirror\\\\node_modules\\\\@vladmandic\\\\face-api\\\\model\\\\face_recognition_model.bin\" \"C:\\\\Users\\\\Sam19\\\\Fit_Mirror\\\\public\\\\models\\\\\" && cp \"C:\\\\Users\\\\Sam19\\\\Fit_Mirror\\\\node_modules\\\\@vladmandic\\\\face-api\\\\model\\\\face_recognition_model-weights_manifest.json\" \"C:\\\\Users\\\\Sam19\\\\Fit_Mirror\\\\public\\\\models\\\\\")",
+      "Bash(manifest\")",
+      "PowerShell(Get-ChildItem \"C:\\\\Users\\\\Sam19\\\\Fit_Mirror\\\\public\\\\models\" | Select-Object Name, @{N='Size';E={[math]::Round\\($_.Length/1KB,1\\)+'KB'}})"
     ]
   },
   "enableAllProjectMcpServers": true,
