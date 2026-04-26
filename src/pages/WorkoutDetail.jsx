@@ -1,9 +1,8 @@
-import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { entities } from '@/api/entities';
 import { supabase } from '@/api/supabaseClient';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { ArrowLeft, Heart, Bookmark, Play, Clock, Target, BarChart3, Users, Shield } from 'lucide-react';
+import { ArrowLeft, Bookmark, Play, Clock, Target, BarChart3, Users, Shield } from 'lucide-react';
 import TipCreator from '@/components/shared/TipCreator';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -28,6 +27,7 @@ const difficultyColors = {
 export default function WorkoutDetail() {
   const workoutId = window.location.pathname.split('/workout/')[1];
   const queryClient = useQueryClient();
+  const { bgEnabled } = useSettings();
 
   const { data: workout, isLoading } = useQuery({
     queryKey: ['workout', workoutId],
@@ -36,17 +36,15 @@ export default function WorkoutDetail() {
     enabled: !!workoutId,
   });
 
-  // Check if this workout is already saved by the current user
+  // Check if this workout is already saved.
   const { data: existingSaved = [] } = useQuery({
     queryKey: ['saved-check', workoutId],
     queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return [];
       const { data, error } = await supabase
         .from('saved_workouts')
         .select('id')
-        .eq('user_id', user.id)
-        .eq('workout_id', workoutId);
+        .eq('workout_id', workoutId)
+        .limit(1);
       if (error) throw error;
       return data || [];
     },
@@ -88,7 +86,6 @@ export default function WorkoutDetail() {
   }
 
   const image = workout.thumbnail_url || WORKOUT_IMAGES[(workout.id?.charCodeAt?.(0) || 0) % WORKOUT_IMAGES.length];
-  const { bgEnabled } = useSettings();
 
   return (
     <div className="min-h-screen pb-8">

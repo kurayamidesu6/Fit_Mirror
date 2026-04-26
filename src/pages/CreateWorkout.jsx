@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 import { entities } from '@/api/entities';
 import { supabase } from '@/api/supabaseClient';
 import { useAuth } from '@/lib/AuthContext';
@@ -25,6 +26,7 @@ const TIPS = [
 
 export default function CreateWorkout() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { toast } = useToast();
   const { user } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -42,34 +44,48 @@ export default function CreateWorkout() {
   const updateField = (field, value) => setForm(prev => ({ ...prev, [field]: value }));
 
   const handleSubmit = async () => {
+    if (isSubmitting) return;
+
     if (!form.title || !form.category || !form.difficulty) {
       toast({ title: 'Missing fields', description: 'Please fill in title, category, and difficulty.', variant: 'destructive' });
       return;
     }
     setIsSubmitting(true);
 
-    let video_url = '';
-    if (videoFile) {
-      const ext = videoFile.name.split('.').pop();
-      const path = `videos/${Date.now()}.${ext}`;
-      const { error } = await supabase.storage.from('workout-videos').upload(path, videoFile);
-      if (!error) {
+    try {
+      let video_url = '';
+      if (videoFile) {
+        const ext = videoFile.name.split('.').pop() || 'mp4';
+        const ownerPath = user?.id || 'anonymous';
+        const path = `videos/${ownerPath}/${Date.now()}.${ext}`;
+        const { error } = await supabase.storage.from('workout-videos').upload(path, videoFile);
+        if (error) throw error;
+
         const { data: { publicUrl } } = supabase.storage.from('workout-videos').getPublicUrl(path);
         video_url = publicUrl;
       }
+
+      await entities.Workout.create({
+        ...form,
+        video_url,
+        creator_name: user?.user_metadata?.full_name || user?.email || 'Anonymous',
+        created_by: user?.id,
+        likes: 0, saves: 0, attempts_count: 0,
+        is_pro: false, is_verified_coach: false,
+      });
+
+      await queryClient.invalidateQueries({ queryKey: ['workouts'] });
+      toast({ title: 'Workout created!', description: 'Your workout is now live on the feed.' });
+      navigate('/');
+    } catch (err) {
+      console.error('[CreateWorkout] publish failed:', err);
+      toast({
+        title: 'Workout could not publish',
+        description: err?.message || 'Please try again in a moment.',
+        variant: 'destructive',
+      });
+      setIsSubmitting(false);
     }
-
-    await entities.Workout.create({
-      ...form,
-      video_url,
-      creator_name: user?.user_metadata?.full_name || user?.email || 'Anonymous',
-      created_by: user?.id,
-      likes: 0, saves: 0, attempts_count: 0,
-      is_pro: false, is_verified_coach: false,
-    });
-
-    toast({ title: 'Workout created!', description: 'Your workout is now live on the feed.' });
-    navigate('/');
   };
 
   return (

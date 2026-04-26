@@ -31,11 +31,9 @@ const createEntity = (tableName) => ({
   },
 
   create: async (data) => {
-    const { data: { user } } = await supabase.auth.getUser();
-    const payload = user ? { ...data, user_id: user.id } : data;
     const { data: result, error } = await supabase
       .from(tableName)
-      .insert(payload)
+      .insert(data)
       .select()
       .single();
     if (error) throw error;
