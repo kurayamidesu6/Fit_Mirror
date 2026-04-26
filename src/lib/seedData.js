@@ -16,7 +16,7 @@ const SEED_WORKOUTS = [
 ];
 
 export async function seedWorkoutsIfEmpty() {
-  const existing = await entities.Workout.list('-created_date', 1);
-  if (existing.length > 0) return;
-  await entities.Workout.bulkCreate(SEED_WORKOUTS);
+  // Real workouts are seeded directly in Supabase via SQL.
+  // This function is intentionally disabled to prevent overwriting them.
+  return;
 }
