@@ -1,1 +1,105 @@
-
+{
+  "name": "Workout",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "Title of the workout"
+    },
+    "description": {
+      "type": "string",
+      "description": "Description of the workout"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "strength",
+        "cardio",
+        "mobility",
+        "hiit",
+        "yoga",
+        "calisthenics"
+      ],
+      "description": "Workout category"
+    },
+    "difficulty": {
+      "type": "string",
+      "enum": [
+        "beginner",
+        "intermediate",
+        "advanced"
+      ],
+      "description": "Difficulty level"
+    },
+    "target_muscle": {
+      "type": "string",
+      "enum": [
+        "full_body",
+        "upper_body",
+        "lower_body",
+        "core",
+        "arms",
+        "legs",
+        "back",
+        "chest"
+      ],
+      "description": "Target muscle group"
+    },
+    "creator_name": {
+      "type": "string",
+      "description": "Name of the creator"
+    },
+    "creator_avatar": {
+      "type": "string",
+      "description": "Avatar URL of the creator"
+    },
+    "video_url": {
+      "type": "string",
+      "description": "URL to the workout video"
+    },
+    "thumbnail_url": {
+      "type": "string",
+      "description": "Thumbnail image URL"
+    },
+    "likes": {
+      "type": "number",
+      "default": 0,
+      "description": "Number of likes"
+    },
+    "saves": {
+      "type": "number",
+      "default": 0,
+      "description": "Number of saves"
+    },
+    "attempts_count": {
+      "type": "number",
+      "default": 0,
+      "description": "Number of attempts"
+    },
+    "is_pro": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether this is pro/coaching content"
+    },
+    "is_verified_coach": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether creator is a verified coach"
+    },
+    "duration_seconds": {
+      "type": "number",
+      "description": "Duration in seconds"
+    },
+    "pass_threshold": {
+      "type": "number",
+      "default": 75,
+      "description": "Score needed to pass (0-100)"
+    }
+  },
+  "required": [
+    "title",
+    "category",
+    "difficulty",
+    "creator_name"
+  ]
+}

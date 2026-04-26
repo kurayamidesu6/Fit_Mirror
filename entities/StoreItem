@@ -1,1 +1,41 @@
-
+{
+  "name": "StoreItem",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "unlock",
+        "boost",
+        "cosmetic",
+        "template",
+        "tipping"
+      ]
+    },
+    "price_fit": {
+      "type": "number"
+    },
+    "icon": {
+      "type": "string"
+    },
+    "is_featured": {
+      "type": "boolean",
+      "default": false
+    },
+    "solana_price": {
+      "type": "number",
+      "description": "Mock SOL equivalent price"
+    }
+  },
+  "required": [
+    "name",
+    "price_fit",
+    "category"
+  ]
+}

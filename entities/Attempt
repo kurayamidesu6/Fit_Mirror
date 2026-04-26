@@ -1,1 +1,40 @@
-
+{
+  "name": "Attempt",
+  "type": "object",
+  "properties": {
+    "workout_id": {
+      "type": "string",
+      "description": "ID of the attempted workout"
+    },
+    "workout_title": {
+      "type": "string",
+      "description": "Title of the workout for quick access"
+    },
+    "similarity_score": {
+      "type": "number",
+      "description": "Score from 0-100"
+    },
+    "passed": {
+      "type": "boolean",
+      "description": "Whether the attempt passed the threshold"
+    },
+    "reward_earned": {
+      "type": "number",
+      "default": 0,
+      "description": "Token reward earned"
+    },
+    "feedback": {
+      "type": "string",
+      "description": "AI feedback on the attempt"
+    },
+    "joint_scores": {
+      "type": "object",
+      "description": "Per-joint accuracy breakdown"
+    }
+  },
+  "required": [
+    "workout_id",
+    "similarity_score",
+    "passed"
+  ]
+}

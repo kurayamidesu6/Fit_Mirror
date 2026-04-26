@@ -1,1 +1,35 @@
-
+{
+  "name": "WeeklySchedule",
+  "type": "object",
+  "properties": {
+    "monday": {
+      "type": "array",
+      "description": "Workouts scheduled for Monday"
+    },
+    "tuesday": {
+      "type": "array",
+      "description": "Workouts scheduled for Tuesday"
+    },
+    "wednesday": {
+      "type": "array",
+      "description": "Workouts scheduled for Wednesday"
+    },
+    "thursday": {
+      "type": "array",
+      "description": "Workouts scheduled for Thursday"
+    },
+    "friday": {
+      "type": "array",
+      "description": "Workouts scheduled for Friday"
+    },
+    "saturday": {
+      "type": "array",
+      "description": "Workouts scheduled for Saturday"
+    },
+    "sunday": {
+      "type": "array",
+      "description": "Workouts scheduled for Sunday"
+    }
+  },
+  "required": []
+}

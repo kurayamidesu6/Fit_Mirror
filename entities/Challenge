@@ -1,1 +1,67 @@
-
+{
+  "name": "Challenge",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "tier": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high"
+      ]
+    },
+    "stake_amount": {
+      "type": "number"
+    },
+    "reward_multiplier": {
+      "type": "number"
+    },
+    "difficulty_label": {
+      "type": "string"
+    },
+    "expires_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "completed",
+        "failed",
+        "expired"
+      ],
+      "default": "active"
+    },
+    "workout_id": {
+      "type": "string"
+    },
+    "target_score": {
+      "type": "number"
+    },
+    "target_reps": {
+      "type": "number"
+    },
+    "target_sets": {
+      "type": "number"
+    },
+    "user_score": {
+      "type": "number"
+    },
+    "recommended": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "required": [
+    "title",
+    "tier",
+    "stake_amount"
+  ]
+}
