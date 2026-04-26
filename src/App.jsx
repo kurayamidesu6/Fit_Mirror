@@ -24,10 +24,10 @@ import Login from '@/pages/Login';
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isAuthenticated } = useAuth();
 
-  // Preload MoveNet in the background so it's warm by the time the user
-  // navigates to a workout and hits Analyze.
+  // Preload pose models in the background so both attempt modes start faster.
   useEffect(() => {
     if (isLoadingAuth) return;
+    import('@/lib/mediapipePose').then(m => m.warmMediaPipePose()).catch(() => {});
     import('@/lib/poseDetection').then(m => m.loadPoseDetector()).catch(() => {});
   }, [isLoadingAuth]);
 

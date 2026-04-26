@@ -52,12 +52,11 @@ A social fitness platform where users replicate short workout videos and receive
 
 
 ### 🤖 Pose Tracking (Mocked)
-Structured for future implementation using:
-- Joint angle comparison
-- Motion path tracking
-- Timing analysis
-
-> Planned integration: MediaPipe / TensorFlow.js
+Implemented with:
+- MediaPipe Pose Landmarker for webcam and reference-video tracking
+- Side-by-side skeleton overlays for live form comparison
+- Joint-angle scoring for pass/fail attempts
+- Optional Gemini feedback for coaching cues
 
 --------------------------------------------------------------------
 
@@ -243,3 +242,19 @@ npm install
 
 # Start development server
 npm run dev
+```
+
+### Optional Gemini Feedback
+
+The app works without Gemini by using local rule-based feedback. To enable Gemini-generated coaching feedback, deploy the Supabase Edge Function and set a server-side secret:
+
+```bash
+supabase secrets set GEMINI_API_KEY='<your Gemini API key>'
+supabase functions deploy gemini-form-feedback
+```
+
+You can optionally override the model:
+
+```bash
+supabase secrets set GEMINI_MODEL='gemini-2.5-flash'
+```
