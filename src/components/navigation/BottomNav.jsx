@@ -1,7 +1,8 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Flame, Plus, Swords, ShoppingBag, Crown, Trophy, LogOut, PanelLeftClose } from 'lucide-react';
+import { Flame, Plus, Swords, ShoppingBag, Crown, Trophy, LogOut, PanelLeftClose, Settings } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/lib/AuthContext';
+import { useSettings } from '@/lib/SettingsContext';
 
 const NAV_ITEMS = [
   { path: '/create', icon: Plus, label: 'Create' },
@@ -14,13 +15,17 @@ const NAV_ITEMS = [
 export default function SideNav({ collapsed, onCollapse }) {
   const location = useLocation();
   const { user, logout } = useAuth();
+  const { bgEnabled } = useSettings();
 
   const displayName = user?.user_metadata?.full_name || user?.email || 'Guest';
 
   return (
     <aside
       className={cn(
-        'min-h-screen bg-card border-r border-border flex flex-col fixed left-0 top-0 bottom-0 z-50 transition-all duration-300 overflow-hidden',
+        'min-h-screen flex flex-col fixed left-0 top-0 bottom-0 z-50 transition-all duration-300 overflow-hidden border-r',
+        bgEnabled
+          ? 'bg-background/60 backdrop-blur-xl border-border/40'
+          : 'bg-card border-border',
         collapsed ? 'w-0 border-r-0' : 'w-60'
       )}
     >
@@ -79,6 +84,19 @@ export default function SideNav({ collapsed, onCollapse }) {
         >
           <Trophy className="w-5 h-5 flex-shrink-0" />
           Achievements
+        </Link>
+
+        <Link
+          to="/settings"
+          className={cn(
+            'flex items-center gap-3 px-4 py-3 rounded-xl text-base font-medium transition-all duration-150',
+            location.pathname === '/settings'
+              ? 'bg-primary/10 text-primary'
+              : 'text-muted-foreground hover:bg-secondary hover:text-foreground'
+          )}
+        >
+          <Settings className="w-5 h-5 flex-shrink-0" />
+          Settings
         </Link>
 
         <Link

@@ -4,6 +4,7 @@ import { queryClientInstance } from '@/lib/query-client'
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
+import { SettingsProvider } from '@/lib/SettingsContext';
 import AppLayout from '@/components/navigation/AppLayout';
 import Feed from '@/pages/Feed';
 import WorkoutDetail from '@/pages/WorkoutDetail';
@@ -15,6 +16,7 @@ import Pro from '@/pages/Pro';
 import Challenge from '@/pages/Challenge';
 import Store from '@/pages/Store';
 import Achievements from '@/pages/Achievements';
+import Settings from '@/pages/Settings';
 import Login from '@/pages/Login';
 
 const AuthenticatedApp = () => {
@@ -42,6 +44,7 @@ const AuthenticatedApp = () => {
         <Route path="/challenge" element={isAuthenticated ? <Challenge /> : <Navigate to="/login" replace />} />
         <Route path="/store" element={<Store />} />
         <Route path="/achievements" element={isAuthenticated ? <Achievements /> : <Navigate to="/login" replace />} />
+        <Route path="/settings" element={isAuthenticated ? <Settings /> : <Navigate to="/login" replace />} />
       </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>
@@ -51,12 +54,14 @@ const AuthenticatedApp = () => {
 function App() {
   return (
     <AuthProvider>
-      <QueryClientProvider client={queryClientInstance}>
-        <Router>
-          <AuthenticatedApp />
-        </Router>
-        <Toaster />
-      </QueryClientProvider>
+      <SettingsProvider>
+        <QueryClientProvider client={queryClientInstance}>
+          <Router>
+            <AuthenticatedApp />
+          </Router>
+          <Toaster />
+        </QueryClientProvider>
+      </SettingsProvider>
     </AuthProvider>
   );
 }

@@ -8,6 +8,7 @@ import TipCreator from '@/components/shared/TipCreator';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
+import { useSettings } from '@/lib/SettingsContext';
 
 const WORKOUT_IMAGES = [
   'https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=800&h=1000&fit=crop',
@@ -87,13 +88,19 @@ export default function WorkoutDetail() {
   }
 
   const image = workout.thumbnail_url || WORKOUT_IMAGES[(workout.id?.charCodeAt?.(0) || 0) % WORKOUT_IMAGES.length];
+  const { bgEnabled } = useSettings();
 
   return (
     <div className="min-h-screen pb-8">
       {/* Hero Image */}
       <div className="relative aspect-[3/4] max-h-[60vh]">
         <img src={image} alt={workout.title} className="w-full h-full object-cover" />
-        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent" />
+        <div className={cn(
+          'absolute inset-0 bg-gradient-to-t to-transparent',
+          bgEnabled
+            ? 'from-black/90 via-black/40'
+            : 'from-background via-background/40'
+        )} />
 
         {/* Back button */}
         <Link to="/" className="absolute top-4 left-4 z-10">

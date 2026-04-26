@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { Heart, Bookmark, Play, Shield } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
+import { useSettings } from '@/lib/SettingsContext';
 
 const WORKOUT_IMAGES = [
   'https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=600&h=800&fit=crop',
@@ -25,6 +26,7 @@ const difficultyColors = {
 
 export default function WorkoutCard({ workout, variant = 'feed' }) {
   const image = getWorkoutImage(workout);
+  const { bgEnabled } = useSettings();
 
   if (variant === 'compact') {
     return (
@@ -49,7 +51,12 @@ export default function WorkoutCard({ workout, variant = 'feed' }) {
 
   return (
     <Link to={`/workout/${workout.id}`} className="block group">
-      <div className="rounded-2xl overflow-hidden bg-card border border-border hover:border-primary/30 transition-colors duration-200">
+      <div className={cn(
+        'rounded-2xl overflow-hidden hover:border-primary/30 transition-colors duration-200 border',
+        bgEnabled
+          ? 'bg-black/50 backdrop-blur-sm border-white/10'
+          : 'bg-card border-border'
+      )}>
         {/* Image */}
         <div className="relative aspect-[3/4] overflow-hidden">
           <img
@@ -57,7 +64,12 @@ export default function WorkoutCard({ workout, variant = 'feed' }) {
             alt={workout.title}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent" />
+          <div className={cn(
+            'absolute inset-0 bg-gradient-to-t to-transparent',
+            bgEnabled
+              ? 'from-black/90 via-black/30'
+              : 'from-black/80 via-black/10'
+          )} />
 
           {/* Play button */}
           <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
@@ -91,7 +103,10 @@ export default function WorkoutCard({ workout, variant = 'feed' }) {
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between px-3 py-2.5">
+        <div className={cn(
+          'flex items-center justify-between px-3 py-2.5',
+          bgEnabled && 'bg-black/20'
+        )}>
           <div className="flex items-center gap-3 text-xs text-muted-foreground">
             <span className="flex items-center gap-1">
               <Heart className="w-3.5 h-3.5" /> {workout.likes || 0}
