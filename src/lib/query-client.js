@@ -1,3 +1,11 @@
-export const queryClient = {};
+import { QueryClient } from '@tanstack/react-query';
 
-export default queryClient;
+
+export const queryClientInstance = new QueryClient({
+	defaultOptions: {
+		queries: {
+			refetchOnWindowFocus: false,
+			retry: 1,
+		},
+	},
+});
