@@ -24,11 +24,10 @@ import Login from '@/pages/Login';
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isAuthenticated } = useAuth();
 
-  // Preload MoveNet in the background so it's warm by the time the user
-  // navigates to a workout and hits Analyze.
+  // Preload MediaPipe's WASM files in the background so live tracking starts faster.
   useEffect(() => {
     if (isLoadingAuth) return;
-    import('@/lib/poseDetection').then(m => m.loadPoseDetector()).catch(() => {});
+    import('@/lib/mediapipePose').then(m => m.warmMediaPipePose()).catch(() => {});
   }, [isLoadingAuth]);
 
   if (isLoadingAuth) {

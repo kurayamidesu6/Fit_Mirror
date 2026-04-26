@@ -19,14 +19,25 @@ import {
   avgConfidence,
 } from './poseDetection';
 
+const ANGLE_SCORE_NAMES = [
+  'left_elbow',
+  'right_elbow',
+  'left_shoulder',
+  'right_shoulder',
+  'left_hip',
+  'right_hip',
+  'left_knee',
+  'right_knee',
+];
+
 const JOINT_NAMES = [
-  'left_shoulder',  'right_shoulder',
-  'left_elbow',     'right_elbow',
-  'left_wrist',     'right_wrist',
-  'left_hip',       'right_hip',
-  'left_knee',      'right_knee',
-  'left_ankle',     'right_ankle',
-  'spine',          'neck',
+  ...ANGLE_SCORE_NAMES,
+  'left_wrist',
+  'right_wrist',
+  'left_ankle',
+  'right_ankle',
+  'spine',
+  'neck',
 ];
 
 // ─── Path A: Reference comparison ────────────────────────────────────────────
@@ -107,9 +118,8 @@ function generateJointScores(frames, baseScore) {
 
   JOINT_NAMES.forEach((name, idx) => {
     if (paired.length >= 3) {
-      // Map joint name index to angle index (first 8 joints)
-      const angleIdx = idx < 8 ? idx : null;
-      if (angleIdx !== null) {
+      const angleIdx = ANGLE_SCORE_NAMES.indexOf(name);
+      if (angleIdx >= 0) {
         const angleSims = paired.flatMap(({ user, ref }) => {
           const u = extractJointAngles(user)[angleIdx];
           const r = extractJointAngles(ref)[angleIdx];
