@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { base44 } from '@/api/base44Client';
+import { entities } from '@/api/entities';
+import { useAuth } from '@/lib/AuthContext';
 import { useQuery } from '@tanstack/react-query';
 import { Wallet, Trophy, Upload, Flame, LogOut, CalendarDays, Bookmark, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -21,13 +22,11 @@ const TABS = [
 ];
 
 export default function Profile() {
-  const [user, setUser] = useState(null);
+  const { user, logout } = useAuth();
   const [activeTab, setActiveTab] = useState('schedule');
   const [schedule, setSchedule] = useState(buildEmptySchedule());
 
   useEffect(() => {
-    base44.auth.me().then(setUser).catch(() => {});
-    // Load saved schedule from localStorage
     const saved = localStorage.getItem('fitMirrorSchedule');
     if (saved) {
       try { setSchedule(JSON.parse(saved)); } catch {}
@@ -41,18 +40,20 @@ export default function Profile() {
 
   const { data: attempts = [] } = useQuery({
     queryKey: ['my-attempts'],
-    queryFn: () => base44.entities.Attempt.list('-created_date', 100),
+    queryFn: () => entities.Attempt.list('-created_date', 100),
+    enabled: !!user,
   });
 
   const { data: myWorkouts = [] } = useQuery({
     queryKey: ['my-workouts'],
-    queryFn: () => base44.entities.Workout.list('-created_date', 50),
+    queryFn: () => entities.Workout.list('-created_date', 50),
   });
 
+  const displayName = user?.user_metadata?.full_name || user?.email || 'Guest';
   const passedAttempts = attempts.filter(a => a.passed);
   const totalRewards = attempts.reduce((sum, a) => sum + (a.reward_earned || 0), 0);
   const completedCount = passedAttempts.length;
-  const uploadCount = myWorkouts.filter(w => w.created_by === user?.email).length;
+  const uploadCount = myWorkouts.filter(w => w.created_by === user?.id).length;
   const wallet = getWalletStatus();
   const rank = getRank(completedCount);
   const nextRank = getNextRank(completedCount);
@@ -76,7 +77,7 @@ export default function Profile() {
               variant="ghost"
               size="icon"
               className="rounded-full"
-              onClick={() => base44.auth.logout()}
+              onClick={logout}
             >
               <LogOut className="w-5 h-5" />
             </Button>
@@ -86,10 +87,10 @@ export default function Profile() {
         {/* Avatar & Info */}
         <div className="flex items-center gap-4 mb-6">
           <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary/40 to-accent/40 flex items-center justify-center text-2xl font-bold font-space">
-            {user?.full_name?.[0]?.toUpperCase() || '?'}
+            {displayName[0]?.toUpperCase() || '?'}
           </div>
           <div className="flex-1">
-            <h2 className="font-bold text-lg">{user?.full_name || 'Loading...'}</h2>
+            <h2 className="font-bold text-lg">{displayName}</h2>
             <p className="text-sm text-muted-foreground">{user?.email}</p>
             <div className="mt-1">
               <RankBadge completedWorkouts={completedCount} size="sm" />
@@ -157,7 +158,6 @@ export default function Profile() {
           ))}
         </div>
 
-        {/* Schedule Tab */}
         {activeTab === 'schedule' && (
           <div className="space-y-4">
             <div className="flex items-center justify-between">
@@ -169,15 +169,12 @@ export default function Profile() {
           </div>
         )}
 
-        {/* Saved Tab */}
         {activeTab === 'saved' && (
           <SavedWorkoutsPanel />
         )}
 
-        {/* Stats Tab */}
         {activeTab === 'stats' && (
           <div className="space-y-4">
-            {/* Link to achievements */}
             <Link to="/achievements">
               <div className="bg-card rounded-2xl border border-chart-3/30 p-4 flex items-center justify-between group hover:border-chart-3/60 transition-colors">
                 <div className="flex items-center gap-3">
@@ -193,7 +190,6 @@ export default function Profile() {
               </div>
             </Link>
 
-            {/* Recent Attempts */}
             {attempts.length > 0 && (
               <div>
                 <h3 className="font-semibold text-sm text-muted-foreground mb-3">Recent Attempts</h3>

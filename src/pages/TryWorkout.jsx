@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { base44 } from '@/api/base44Client';
+import { entities } from '@/api/entities';
 import { useQuery } from '@tanstack/react-query';
 import { ArrowLeft, Camera, Square, RotateCcw, Scan, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -17,12 +17,11 @@ export default function TryWorkout() {
 
   const { data: workout } = useQuery({
     queryKey: ['workout', workoutId],
-    queryFn: () => base44.entities.Workout.filter({ id: workoutId }),
+    queryFn: () => entities.Workout.filter({ id: workoutId }),
     select: (data) => data?.[0],
     enabled: !!workoutId,
   });
 
-  // Countdown timer
   useEffect(() => {
     if (phase !== 'countdown') return;
     if (countdown === 0) {
@@ -33,7 +32,6 @@ export default function TryWorkout() {
     return () => clearTimeout(timer);
   }, [phase, countdown]);
 
-  // Recording timer
   useEffect(() => {
     if (phase !== 'recording') return;
     const maxTime = workout?.duration_seconds || 30;
@@ -53,21 +51,11 @@ export default function TryWorkout() {
   const handleSubmit = async () => {
     setPhase('processing');
 
-    // Simulate processing delay
     await new Promise(resolve => setTimeout(resolve, 2000));
 
-    /**
-     * POSE TRACKING INTEGRATION POINT
-     * In production, this is where you would:
-     * 1. Stop the MediaPipe/TensorFlow.js pose detection
-     * 2. Extract the captured pose landmarks from all frames
-     * 3. Compare against the reference workout's pose data
-     * 4. Calculate real similarity score
-     */
     const result = performPoseComparison(workout);
 
-    // Save the attempt
-    const attempt = await base44.entities.Attempt.create({
+    const attempt = await entities.Attempt.create({
       workout_id: workoutId,
       workout_title: workout?.title || 'Workout',
       similarity_score: result.similarity_score,
@@ -77,7 +65,6 @@ export default function TryWorkout() {
       joint_scores: result.joint_scores,
     });
 
-    // Navigate to result
     navigate(`/result/${attempt.id}`);
   };
 
@@ -94,9 +81,7 @@ export default function TryWorkout() {
     <div className="fixed inset-0 bg-black flex flex-col">
       {/* Camera viewfinder (mocked) */}
       <div className="flex-1 relative overflow-hidden">
-        {/* Mock camera background */}
         <div className="absolute inset-0 bg-gradient-to-b from-gray-900 to-gray-800">
-          {/* Grid lines for pose alignment */}
           <div className="absolute inset-0 opacity-20">
             <div className="absolute left-1/3 top-0 bottom-0 w-px bg-white" />
             <div className="absolute left-2/3 top-0 bottom-0 w-px bg-white" />
@@ -104,7 +89,6 @@ export default function TryWorkout() {
             <div className="absolute top-2/3 left-0 right-0 h-px bg-white" />
           </div>
 
-          {/* Body outline placeholder */}
           <div className="absolute inset-0 flex items-center justify-center">
             {phase === 'ready' && (
               <div className="text-center">
@@ -126,9 +110,7 @@ export default function TryWorkout() {
 
             {phase === 'recording' && (
               <div className="absolute inset-0">
-                {/* Pose skeleton overlay (mocked) */}
                 <svg className="absolute inset-0 w-full h-full" viewBox="0 0 300 500">
-                  {/* Mocked skeleton lines */}
                   <g stroke="hsl(162, 95%, 50%)" strokeWidth="2" opacity="0.6">
                     <line x1="150" y1="100" x2="150" y2="200" />
                     <line x1="150" y1="140" x2="110" y2="200" />
@@ -140,7 +122,6 @@ export default function TryWorkout() {
                     <line x1="120" y1="300" x2="110" y2="400" />
                     <line x1="180" y1="300" x2="190" y2="400" />
                   </g>
-                  {/* Joint dots */}
                   {[[150,100],[150,140],[110,200],[190,200],[90,270],[210,270],[150,200],[120,300],[180,300],[110,400],[190,400]].map(([x,y], i) => (
                     <circle key={i} cx={x} cy={y} r="5" fill="hsl(162, 95%, 50%)" opacity="0.8" />
                   ))}
@@ -160,15 +141,15 @@ export default function TryWorkout() {
 
         {/* Top bar */}
         <div className="absolute top-0 left-0 right-0 z-10 p-4 flex items-center justify-between">
-          <Button 
-            variant="ghost" 
-            size="icon" 
+          <Button
+            variant="ghost"
+            size="icon"
             onClick={() => navigate(-1)}
             className="rounded-full bg-black/40 backdrop-blur-sm text-white hover:bg-black/60"
           >
             <ArrowLeft className="w-5 h-5" />
           </Button>
-          
+
           {phase === 'recording' && (
             <div className="flex items-center gap-2 bg-destructive/90 rounded-full px-4 py-2">
               <div className="w-2 h-2 rounded-full bg-white animate-pulse" />
@@ -187,7 +168,6 @@ export default function TryWorkout() {
           </Button>
         </div>
 
-        {/* Workout reference info */}
         <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent">
           <p className="text-white/60 text-xs uppercase tracking-wider mb-1">Replicating</p>
           <p className="text-white font-semibold">{workout?.title || 'Loading...'}</p>

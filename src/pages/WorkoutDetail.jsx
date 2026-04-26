@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { base44 } from '@/api/base44Client';
+import { entities } from '@/api/entities';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { ArrowLeft, Heart, Bookmark, Play, Clock, Target, BarChart3, Users, Shield } from 'lucide-react';
 import TipCreator from '@/components/shared/TipCreator';
@@ -31,7 +31,7 @@ export default function WorkoutDetail() {
 
   const { data: workout, isLoading } = useQuery({
     queryKey: ['workout', workoutId],
-    queryFn: () => base44.entities.Workout.filter({ id: workoutId }),
+    queryFn: () => entities.Workout.filter({ id: workoutId }),
     select: (data) => data?.[0],
     enabled: !!workoutId,
   });

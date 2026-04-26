@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { base44 } from '@/api/base44Client';
+import { entities } from '@/api/entities';
 import { useQuery } from '@tanstack/react-query';
 import { Trophy, Star, Calendar, Flame, Coins, CheckCircle2, Circle, ChevronLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { base44 } from '@/api/base44Client';
+import { entities } from '@/api/entities';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Flame, TrendingUp } from 'lucide-react';
 import WorkoutCard from '@/components/shared/WorkoutCard';
@@ -19,7 +19,7 @@ export default function Feed() {
 
   const { data: workouts = [], isLoading } = useQuery({
     queryKey: ['workouts'],
-    queryFn: () => base44.entities.Workout.list('-created_date', 50),
+    queryFn: () => entities.Workout.list('-created_date', 50),
   });
 
   const filtered = category === 'all' 

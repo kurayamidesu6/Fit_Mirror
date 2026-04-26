@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { base44 } from '@/api/base44Client';
+import { entities } from '@/api/entities';
 import { useQuery } from '@tanstack/react-query';
 import { ShoppingBag, Zap, Crown, Shield, Flame, Star, ArrowRight, Coins, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -93,7 +93,7 @@ export default function Store() {
 
   const { data: attempts = [] } = useQuery({
     queryKey: ['my-attempts'],
-    queryFn: () => base44.entities.Attempt.list('-created_date', 100),
+    queryFn: () => entities.Attempt.list('-created_date', 100),
   });
 
   const totalRewards = attempts.reduce((s, a) => s + (a.reward_earned || 0), 0);

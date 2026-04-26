@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { base44 } from '@/api/base44Client';
+import { entities } from '@/api/entities';
+import { supabase } from '@/api/supabaseClient';
+import { useAuth } from '@/lib/AuthContext';
 import { Upload, Video, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -16,6 +18,7 @@ const MUSCLES = ['full_body', 'upper_body', 'lower_body', 'core', 'arms', 'legs'
 export default function CreateWorkout() {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { user } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [videoFile, setVideoFile] = useState(null);
   const [form, setForm] = useState({
@@ -39,19 +42,23 @@ export default function CreateWorkout() {
     }
 
     setIsSubmitting(true);
-    
+
     let video_url = '';
     if (videoFile) {
-      const result = await base44.integrations.Core.UploadFile({ file: videoFile });
-      video_url = result.file_url;
+      const ext = videoFile.name.split('.').pop();
+      const path = `videos/${Date.now()}.${ext}`;
+      const { data, error } = await supabase.storage.from('workout-videos').upload(path, videoFile);
+      if (!error) {
+        const { data: { publicUrl } } = supabase.storage.from('workout-videos').getPublicUrl(path);
+        video_url = publicUrl;
+      }
     }
 
-    const user = await base44.auth.me();
-    
-    await base44.entities.Workout.create({
+    await entities.Workout.create({
       ...form,
       video_url,
-      creator_name: user?.full_name || 'Anonymous',
+      creator_name: user?.user_metadata?.full_name || user?.email || 'Anonymous',
+      created_by: user?.id,
       likes: 0,
       saves: 0,
       attempts_count: 0,
@@ -189,7 +196,6 @@ export default function CreateWorkout() {
           </div>
         </div>
 
-        {/* Submit */}
         <Button
           onClick={handleSubmit}
           disabled={isSubmitting}

@@ -1,4 +1,4 @@
-import { base44 } from '@/api/base44Client';
+import { entities } from '@/api/entities';
 
 const SEED_WORKOUTS = [
   { title: "Perfect Push-Up", description: "Master the classic push-up with proper form. Keep your core tight, elbows at 45 degrees, and lower until your chest nearly touches the ground.", category: "strength", difficulty: "beginner", target_muscle: "chest", creator_name: "Alex Chen", likes: 342, saves: 89, attempts_count: 1250, is_pro: false, is_verified_coach: false, duration_seconds: 15, pass_threshold: 75, thumbnail_url: "https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=600&h=800&fit=crop" },
@@ -16,7 +16,7 @@ const SEED_WORKOUTS = [
 ];
 
 export async function seedWorkoutsIfEmpty() {
-  const existing = await base44.entities.Workout.list('-created_date', 1);
+  const existing = await entities.Workout.list('-created_date', 1);
   if (existing.length > 0) return;
-  await base44.entities.Workout.bulkCreate(SEED_WORKOUTS);
+  await entities.Workout.bulkCreate(SEED_WORKOUTS);
 }

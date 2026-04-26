@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { base44 } from '@/api/base44Client';
+import { entities } from '@/api/entities';
 import { useQuery } from '@tanstack/react-query';
 import { Bookmark, GripVertical, Minus, Plus } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
@@ -106,7 +106,7 @@ const MOCK_SAVED = [
 export default function SavedWorkoutsPanel() {
   const { data: savedWorkouts = [] } = useQuery({
     queryKey: ['saved-workouts'],
-    queryFn: () => base44.entities.SavedWorkout.list('-created_date', 20),
+    queryFn: () => entities.SavedWorkout.list('-created_date', 20),
   });
 
   const displayWorkouts = savedWorkouts.length > 0 ? savedWorkouts : MOCK_SAVED;

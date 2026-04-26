@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__85b1dc84-8246-4933-a33e-5310f54298cc__apply_migration",
+      "Bash(npm install *)",
+      "Bash(npm uninstall *)",
+      "Bash(npm run *)",
+      "mcp__85b1dc84-8246-4933-a33e-5310f54298cc__execute_sql"
+    ]
+  }
+}

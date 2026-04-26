@@ -1,5 +1,4 @@
-import React from 'react';
-import { base44 } from '@/api/base44Client';
+import { supabase } from '@/api/supabaseClient';
 
 const UserNotRegisteredError = () => {
   return (
@@ -13,10 +12,10 @@ const UserNotRegisteredError = () => {
           </div>
           <h1 className="text-3xl font-bold text-slate-900 mb-4">Access Restricted</h1>
           <p className="text-slate-600 mb-6">
-            This account isn't registered for this app. Try logging in with a different email.
+            This account isn't registered. Try logging in with a different email.
           </p>
           <button
-            onClick={() => base44.auth.logout()}
+            onClick={() => supabase.auth.signOut()}
             className="w-full py-3 px-6 bg-slate-900 text-white rounded-lg font-medium hover:bg-slate-700 transition-colors mb-3"
           >
             Log out &amp; try another account

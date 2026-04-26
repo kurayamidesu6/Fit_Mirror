@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { base44 } from '@/api/base44Client';
+import { entities } from '@/api/entities';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Swords, Zap, Timer, Trophy, TrendingUp, Star, ChevronRight, RefreshCw, Lock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -104,12 +104,12 @@ export default function Challenge() {
 
   const { data: attempts = [] } = useQuery({
     queryKey: ['my-attempts'],
-    queryFn: () => base44.entities.Attempt.list('-created_date', 100),
+    queryFn: () => entities.Attempt.list('-created_date', 100),
   });
 
   const { data: activeChallenges = [] } = useQuery({
     queryKey: ['challenges'],
-    queryFn: () => base44.entities.Challenge.filter({ status: 'active' }, '-created_date', 10),
+    queryFn: () => entities.Challenge.filter({ status: 'active' }, '-created_date', 10),
   });
 
   const completedCount = attempts.filter(a => a.passed).length;
@@ -118,7 +118,7 @@ export default function Challenge() {
   const totalRewards = attempts.reduce((s, a) => s + (a.reward_earned || 0), 0);
 
   const acceptMutation = useMutation({
-    mutationFn: (challenge) => base44.entities.Challenge.create(challenge),
+    mutationFn: (challenge) => entities.Challenge.create(challenge),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['challenges'] });
       setGeneratedChallenge(null);
@@ -126,7 +126,7 @@ export default function Challenge() {
   });
 
   const abandonMutation = useMutation({
-    mutationFn: (id) => base44.entities.Challenge.update(id, { status: 'failed' }),
+    mutationFn: (id) => entities.Challenge.update(id, { status: 'failed' }),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['challenges'] }),
   });
 

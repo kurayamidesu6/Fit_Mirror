@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { base44 } from '@/api/base44Client';
+import { entities } from '@/api/entities';
 import { useQuery } from '@tanstack/react-query';
 import { Trophy, Coins, ArrowRight, RotateCcw, Share2, Check, X, Crown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -16,7 +16,7 @@ export default function AttemptResult() {
 
   const { data: attempt, isLoading } = useQuery({
     queryKey: ['attempt', attemptId],
-    queryFn: () => base44.entities.Attempt.filter({ id: attemptId }),
+    queryFn: () => entities.Attempt.filter({ id: attemptId }),
     select: (data) => data?.[0],
     enabled: !!attemptId,
   });

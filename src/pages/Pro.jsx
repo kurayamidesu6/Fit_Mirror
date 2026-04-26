@@ -1,4 +1,4 @@
-import { base44 } from '@/api/base44Client';
+import { entities } from '@/api/entities';
 import { useQuery } from '@tanstack/react-query';
 import { Crown, Lock, Shield, Play, ChevronRight, Flame } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -79,12 +79,12 @@ function ProUnlockedCard({ workout, index }) {
 export default function Pro() {
   const { data: attempts = [] } = useQuery({
     queryKey: ['my-attempts'],
-    queryFn: () => base44.entities.Attempt.list('-created_date', 100),
+    queryFn: () => entities.Attempt.list('-created_date', 100),
   });
 
   const { data: proWorkouts = [] } = useQuery({
     queryKey: ['pro-workouts'],
-    queryFn: () => base44.entities.Workout.filter({ is_pro: true }, '-created_date', 20),
+    queryFn: () => entities.Workout.filter({ is_pro: true }, '-created_date', 20),
   });
 
   const completedCount = attempts.filter(a => a.passed).length;
