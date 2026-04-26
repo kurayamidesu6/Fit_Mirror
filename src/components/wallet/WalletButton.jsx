@@ -4,7 +4,7 @@ import { Wallet, LogOut } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export default function WalletButton({ className = '', fullWidth = false }) {
-  const { connected, shortAddr, solBalance, connect, disconnect, connecting, hasPhantom } = useWallet();
+  const { connected, shortAddr, fitBalance, solBalance, connect, disconnect, connecting, hasPhantom } = useWallet();
   const [open, setOpen] = useState(false);
 
   if (connected) {
@@ -23,7 +23,7 @@ export default function WalletButton({ className = '', fullWidth = false }) {
             <div className="w-2 h-2 rounded-full bg-primary animate-pulse flex-shrink-0" />
             <span className="font-mono text-xs">{shortAddr}</span>
           </div>
-          <span className="text-[10px] text-primary/70">{solBalance.toFixed(3)} SOL</span>
+          <span className="text-[10px] text-primary/70">{fitBalance} FIT</span>
         </button>
 
         {open && (
@@ -32,7 +32,8 @@ export default function WalletButton({ className = '', fullWidth = false }) {
             <div className="absolute right-0 top-full mt-1 bg-card border border-border rounded-xl shadow-lg z-50 min-w-[180px] p-1">
               <div className="px-3 py-2 border-b border-border mb-1">
                 <p className="text-[10px] text-muted-foreground font-mono truncate">{shortAddr}</p>
-                <p className="text-xs font-semibold mt-0.5">{solBalance.toFixed(4)} SOL (devnet)</p>
+                <p className="text-xs font-semibold mt-0.5">{fitBalance} FIT</p>
+                <p className="text-[10px] text-muted-foreground">{solBalance.toFixed(4)} SOL (devnet)</p>
               </div>
               <button
                 onClick={() => { disconnect(); setOpen(false); }}

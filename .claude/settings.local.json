@@ -30,7 +30,10 @@
       "Bash(cp \"C:\\\\Users\\\\Sam19\\\\Fit_Mirror\\\\node_modules\\\\@vladmandic\\\\face-api\\\\model\\\\face_landmark_68_model.bin\" \"C:\\\\Users\\\\Sam19\\\\Fit_Mirror\\\\public\\\\models\\\\\" && cp \"C:\\\\Users\\\\Sam19\\\\Fit_Mirror\\\\node_modules\\\\@vladmandic\\\\face-api\\\\model\\\\face_landmark_68_model-weights_manifest.json\" \"C:\\\\Users\\\\Sam19\\\\Fit_Mirror\\\\public\\\\models\\\\\")",
       "Bash(cp \"C:\\\\Users\\\\Sam19\\\\Fit_Mirror\\\\node_modules\\\\@vladmandic\\\\face-api\\\\model\\\\face_recognition_model.bin\" \"C:\\\\Users\\\\Sam19\\\\Fit_Mirror\\\\public\\\\models\\\\\" && cp \"C:\\\\Users\\\\Sam19\\\\Fit_Mirror\\\\node_modules\\\\@vladmandic\\\\face-api\\\\model\\\\face_recognition_model-weights_manifest.json\" \"C:\\\\Users\\\\Sam19\\\\Fit_Mirror\\\\public\\\\models\\\\\")",
       "Bash(manifest\")",
-      "PowerShell(Get-ChildItem \"C:\\\\Users\\\\Sam19\\\\Fit_Mirror\\\\public\\\\models\" | Select-Object Name, @{N='Size';E={[math]::Round\\($_.Length/1KB,1\\)+'KB'}})"
+      "PowerShell(Get-ChildItem \"C:\\\\Users\\\\Sam19\\\\Fit_Mirror\\\\public\\\\models\" | Select-Object Name, @{N='Size';E={[math]::Round\\($_.Length/1KB,1\\)+'KB'}})",
+      "Bash(not exist *)",
+      "mcp__supabase__list_edge_functions",
+      "mcp__supabase__get_logs"
     ]
   },
   "enableAllProjectMcpServers": true,

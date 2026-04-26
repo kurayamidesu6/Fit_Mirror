@@ -174,8 +174,10 @@ export const WalletProvider = ({ children }) => {
           txHash = await spendTokens({ walletAddress: address, amount: Math.abs(amount) });
         }
       } catch (err) {
-        // Chain call failed — log and fall through to optimistic recording
-        console.warn(`[tokenService] ${type} chain call failed, recording optimistically:`, err);
+        // Chain call failed — log the real error so it's visible in DevTools
+        console.error(
+          `[wallet] ${type} on-chain call failed (balance updated optimistically):\n  ${err?.message || err}`,
+        );
       }
     }
 

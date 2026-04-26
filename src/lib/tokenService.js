@@ -14,12 +14,12 @@ import {
   Transaction,
 } from '@solana/web3.js';
 import {
-  createTransferInstruction,
+  createTransferCheckedInstruction,
   getAssociatedTokenAddress,
-  TOKEN_PROGRAM_ID,
+  TOKEN_2022_PROGRAM_ID,
 } from '@solana/spl-token';
 import { supabase } from '@/api/supabaseClient';
-import { getPhantomProvider, TOKEN_MINT_ADDRESS, DEVNET_RPC } from './wallet';
+import { getPhantomProvider, TOKEN_MINT_ADDRESS, TOKEN_DECIMALS, DEVNET_RPC } from './wallet';
 
 // Treasury public key — the wallet that holds your token supply.
 // Set VITE_TREASURY_WALLET_ADDRESS in your .env file.
@@ -40,8 +40,17 @@ export async function claimReward({ walletAddress, amount, description }) {
     body: { walletAddress, amount, reason: description },
   });
 
-  if (error) throw new Error(`Edge function error: ${error.message}`);
-  if (!data?.success) throw new Error(data?.error ?? 'reward-tokens failed');
+  if (error) {
+    // supabase-js wraps non-2xx responses as FunctionsHttpError.
+    // The actual JSON body (with our `error` field) lives in error.context.
+    let detail = error.message;
+    try {
+      const body = await error.context?.json?.();
+      if (body?.error) detail = body.error;
+    } catch { /* context not parseable — keep original message */ }
+    throw new Error(`reward-tokens: ${detail}`);
+  }
+  if (!data?.success) throw new Error(data?.error ?? 'reward-tokens returned failure');
 
   return data.signature;
 }
@@ -69,23 +78,26 @@ export async function spendTokens({ walletAddress, amount }) {
   const treasuryPubkey = new PublicKey(TREASURY_ADDRESS);
 
   const [userTokenAcc, treasuryTokenAcc] = await Promise.all([
-    getAssociatedTokenAddress(mintPubkey, userPubkey),
-    getAssociatedTokenAddress(mintPubkey, treasuryPubkey),
+    getAssociatedTokenAddress(mintPubkey, userPubkey, false, TOKEN_2022_PROGRAM_ID),
+    getAssociatedTokenAddress(mintPubkey, treasuryPubkey, false, TOKEN_2022_PROGRAM_ID),
   ]);
 
   const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
+  const rawAmount = BigInt(amount) * BigInt(10 ** TOKEN_DECIMALS);
 
   const tx = new Transaction({
     recentBlockhash: blockhash,
     feePayer: userPubkey,
   }).add(
-    createTransferInstruction(
+    createTransferCheckedInstruction(
       userTokenAcc,
+      mintPubkey,
       treasuryTokenAcc,
       userPubkey,
-      amount, // assumes TOKEN_DECIMALS = 0; multiply by 10^decimals if needed
+      rawAmount,
+      TOKEN_DECIMALS,
       [],
-      TOKEN_PROGRAM_ID,
+      TOKEN_2022_PROGRAM_ID,
     ),
   );
 

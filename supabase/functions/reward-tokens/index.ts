@@ -22,8 +22,9 @@ import {
 } from 'npm:@solana/web3.js@1';
 import {
   getOrCreateAssociatedTokenAccount,
-  transfer,
-} from 'npm:@solana/spl-token@0.3';
+  transferChecked,
+  TOKEN_2022_PROGRAM_ID,
+} from 'npm:@solana/spl-token@0.4';
 import { corsHeaders } from '../_shared/cors.ts';
 
 // Caps per request — prevents abuse
@@ -69,7 +70,7 @@ serve(async (req: Request) => {
     );
 
     const mintAddress = new PublicKey(Deno.env.get('TOKEN_MINT_ADDRESS')!);
-    const decimals = parseInt(Deno.env.get('TOKEN_DECIMALS') ?? '0', 10);
+    const decimals = parseInt(Deno.env.get('TOKEN_DECIMALS') ?? '9', 10);
 
     // ── 4. Connect to Solana devnet ──────────────────────────────────────────
     const connection = new Connection(clusterApiUrl('devnet'), 'confirmed');
@@ -78,19 +79,24 @@ serve(async (req: Request) => {
     const recipientPubkey = new PublicKey(walletAddress);
 
     const [treasuryTokenAcc, recipientTokenAcc] = await Promise.all([
-      getOrCreateAssociatedTokenAccount(connection, treasury, mintAddress, treasury.publicKey),
-      getOrCreateAssociatedTokenAccount(connection, treasury, mintAddress, recipientPubkey),
+      getOrCreateAssociatedTokenAccount(connection, treasury, mintAddress, treasury.publicKey, false, 'confirmed', {}, TOKEN_2022_PROGRAM_ID),
+      getOrCreateAssociatedTokenAccount(connection, treasury, mintAddress, recipientPubkey, false, 'confirmed', {}, TOKEN_2022_PROGRAM_ID),
     ]);
 
     // ── 6. Transfer tokens treasury → recipient ──────────────────────────────
-    const rawAmount = amount * Math.pow(10, decimals);
-    const signature = await transfer(
+    const rawAmount = BigInt(amount) * BigInt(10 ** decimals);
+    const signature = await transferChecked(
       connection,
-      treasury,                      // fee payer + authority
+      treasury,                      // fee payer
       treasuryTokenAcc.address,      // from
+      mintAddress,                   // mint (required for transferChecked)
       recipientTokenAcc.address,     // to
-      treasury.publicKey,            // owner
-      rawAmount,
+      treasury,                      // owner (full Keypair so it can sign)
+      rawAmount,                     // amount in raw units
+      decimals,                      // decimals
+      [],
+      {},
+      TOKEN_2022_PROGRAM_ID,
     );
 
     console.log(`Rewarded ${amount} tokens to ${walletAddress} | tx: ${signature} | reason: ${reason}`);

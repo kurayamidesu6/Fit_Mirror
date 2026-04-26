@@ -1,260 +1,177 @@
-# 💪 Social Fitness App (MVP)
+# Supabase CLI
 
-A social fitness platform where users replicate short workout videos and receive a similarity score based on their movement. The app gamifies fitness through rewards, rankings, challenges, and progression, with future support for blockchain-based incentives.
+[![Coverage Status](https://coveralls.io/repos/github/supabase/cli/badge.svg?branch=develop)](https://coveralls.io/github/supabase/cli?branch=develop) [![Bitbucket Pipelines](https://img.shields.io/bitbucket/pipelines/supabase-cli/setup-cli/master?style=flat-square&label=Bitbucket%20Canary)](https://bitbucket.org/supabase-cli/setup-cli/pipelines) [![Gitlab Pipeline Status](https://img.shields.io/gitlab/pipeline-status/sweatybridge%2Fsetup-cli?label=Gitlab%20Canary)
+](https://gitlab.com/sweatybridge/setup-cli/-/pipelines)
 
---------------------------------------------------------------------
+[Supabase](https://supabase.io) is an open source Firebase alternative. We're building the features of Firebase using enterprise-grade open source tools.
 
-## 🚀 Core Concept
+This repository contains all the functionality for Supabase CLI.
 
-- Creators upload **single-rep workout videos**
-- Users attempt to replicate movements via recording
-- A (mocked) pose system scores similarity
-- Successful attempts earn **Fit Points**
-- Users unlock content and progress through ranks
+- [x] Running Supabase locally
+- [x] Managing database migrations
+- [x] Creating and deploying Supabase Functions
+- [x] Generating types directly from your database schema
+- [x] Making authenticated HTTP requests to [Management API](https://supabase.com/docs/reference/api/introduction)
 
---------------------------------------------------------------------
+## Getting started
 
+### Install the CLI
 
-## 🔄 Core User Flow
-
-1. Browse workout feed  
-2. Open workout details  
-3. Click **"Try It"**  
-4. Record attempt (mock camera UI)  
-5. Receive similarity score + result  
-6. Earn rewards  
-7. Track progress on profile  
-8. Unlock Pro content  
-
---------------------------------------------------------------------
-
-## 🧩 Features
-
-### 🏋️ Workout System
-- Upload single-rep workout videos
-- Metadata includes:
-  - Title
-  - Description
-  - Category (strength, cardio, etc.)
-  - Difficulty
-  - Target muscle group
-- Like and save workouts
-
---------------------------------------------------------------------
-
-### 🎯 Attempt & Scoring
-- Mock recording interface
-- Similarity score (0–100)
-- Configurable pass threshold (~70–80)
-- Feedback and reward system
-
---------------------------------------------------------------------
-
-
-### 🤖 Pose Tracking (Mocked)
-Implemented with:
-- MediaPipe Pose Landmarker for webcam and reference-video tracking
-- Side-by-side skeleton overlays for live form comparison
-- Joint-angle scoring for pass/fail attempts
-- Optional Gemini feedback for coaching cues
-
---------------------------------------------------------------------
-
-
-### 💰 Rewards System (Solana-Ready)
-- Earn **Fit Points** for successful attempts
-- Mock wallet integration
-- Designed for future blockchain payouts
-
---------------------------------------------------------------------
-
-
-### 🏆 Ranking System
-- Beginner → Intermediate → Pro
-- Progress based on:
-  - Workout completions
-  - Engagement
-- All ranks can upload content
-
---------------------------------------------------------------------
-
-
-## 💎 Pro Section
-
-- Locked initially
-- Unlock after completing workouts
-- Includes:
-  - Coach-led content
-  - Form correction
-  - Technique tips
-- Structured for future token-based unlocks
-
---------------------------------------------------------------------
-
-
-## 📅 Weekly Workout Planner
-
-- Drag-and-drop weekly calendar (Mon–Sun)
-- Build custom routines
-- Assign saved workouts to days
-- Modify, move, or remove workouts
-- Stored in structured state
-
---------------------------------------------------------------------
-
-
-## 🎯 Achievements System
-
-Auto-generated from the workout schedule:
-
-### Daily Tasks
-- Based on scheduled workouts
-- Example: "Complete 3 sets of 12 squats"
-
-### Weekly Tasks
-- Based on consistency
-- Example: "Complete squat routine 3 times"
-
-### Monthly Tasks
-- Long-term adherence goals
-- Example: "Complete push-up plan 12 times"
-
-Includes:
-- Progress tracking
-- Rewards
-- Modular logic for future real tracking
-
---------------------------------------------------------------------
-
-
-## ⚔️ Challenge System
-
-- 24-hour time-limited challenges
-- Risk tiers:
-  - Low
-  - Medium
-  - High
-- Stake Fit Points for higher rewards
-- Personalized difficulty based on:
-  - Rank
-  - History
-  - Consistency
-- Recommended tier system (mocked)
-
---------------------------------------------------------------------
-
-
-## 🛒 Store
-
-Spend Fit Points on:
-- Pro unlocks
-- Premium workout plans
-- Streak protection
-- Retry boosts
-- Cosmetics
-- Routine templates
-
-Includes a **mock Fit Points → Solana exchange system**
-
---------------------------------------------------------------------
-
-
-## 💸 Tipping System
-
-- Tip creators using Fit Points
-- Social, community-driven support
-- Placeholder for crypto tipping
-
---------------------------------------------------------------------
-
-
-## 🔐 Anti-Cheat & Verification
-
-Multi-layer verification system:
-
-- Identity enrollment (selfie)
-- Pre-workout face verification
-- Random liveness prompts:
-  - Blink
-  - Turn head
-  - Smile
-- Duplicate submission detection
-- Metadata checks
-
-> Designed for future computer vision integration
-
---------------------------------------------------------------------
-
-
-## 🧭 Navigation
-
-### Main Tabs
-- Feed  
-- Create  
-- Challenge  
-- Store  
-- Pro  
-
-### Top Right
-- Profile  
-- Achievements  
-
---------------------------------------------------------------------
-
-
-## 🖥️ Tech Stack
-
-- React (component-based architecture)
-
-### Structure
-
-- Mock datasets:
-  - Users
-  - Workouts
-  - Attempts
-
---------------------------------------------------------------------
-
-
-## 🎨 Design
-
-- Mobile-first UI
-- Clean, modern interface
-- Card-based layout
-- Inspired by:
-  - TikTok (content feed)
-  - Strava (fitness tracking)
-
---------------------------------------------------------------------
-
-
-## ⚙️ Setup Instructions
+Available via [NPM](https://www.npmjs.com) as dev dependency. To install:
 
 ```bash
-# Clone the repository
-git clone <your-repo-url>
-
-# Navigate into the project
-cd <project-folder>
-
-# Install dependencies
-npm install
-
-# Start development server
-npm run dev
+npm i supabase --save-dev
 ```
 
-### Optional Gemini Feedback
+When installing with yarn 4, you need to disable experimental fetch with the following nodejs config.
 
-The app works without Gemini by using local rule-based feedback. To enable Gemini-generated coaching feedback, deploy the Supabase Edge Function and set a server-side secret:
-
-```bash
-supabase secrets set GEMINI_API_KEY='<your Gemini API key>'
-supabase functions deploy gemini-form-feedback
+```
+NODE_OPTIONS=--no-experimental-fetch yarn add supabase
 ```
 
-You can optionally override the model:
+> **Note**
+For Bun versions below v1.0.17, you must add `supabase` as a [trusted dependency](https://bun.sh/guides/install/trusted) before running `bun add -D supabase`.
+
+<details>
+  <summary><b>macOS</b></summary>
+
+  Available via [Homebrew](https://brew.sh). To install:
+
+  ```sh
+  brew install supabase/tap/supabase
+  ```
+
+  To install the beta release channel:
+  
+  ```sh
+  brew install supabase/tap/supabase-beta
+  brew link --overwrite supabase-beta
+  ```
+  
+  To upgrade:
+
+  ```sh
+  brew upgrade supabase
+  ```
+</details>
+
+<details>
+  <summary><b>Windows</b></summary>
+
+  Available via [Scoop](https://scoop.sh). To install:
+
+  ```powershell
+  scoop bucket add supabase https://github.com/supabase/scoop-bucket.git
+  scoop install supabase
+  ```
+
+  To upgrade:
+
+  ```powershell
+  scoop update supabase
+  ```
+</details>
+
+<details>
+  <summary><b>Linux</b></summary>
+
+  Available via [Homebrew](https://brew.sh) and Linux packages.
+
+  #### via Homebrew
+
+  To install:
+
+  ```sh
+  brew install supabase/tap/supabase
+  ```
+
+  To upgrade:
+
+  ```sh
+  brew upgrade supabase
+  ```
+
+  #### via Linux packages
+
+  Linux packages are provided in [Releases](https://github.com/supabase/cli/releases). To install, download the `.apk`/`.deb`/`.rpm`/`.pkg.tar.zst` file depending on your package manager and run the respective commands.
+
+  ```sh
+  sudo apk add --allow-untrusted <...>.apk
+  ```
+
+  ```sh
+  sudo dpkg -i <...>.deb
+  ```
+
+  ```sh
+  sudo rpm -i <...>.rpm
+  ```
+
+  ```sh
+  sudo pacman -U <...>.pkg.tar.zst
+  ```
+</details>
+
+<details>
+  <summary><b>Other Platforms</b></summary>
+
+  You can also install the CLI via [go modules](https://go.dev/ref/mod#go-install) without the help of package managers.
+
+  ```sh
+  go install github.com/supabase/cli@latest
+  ```
+
+  Add a symlink to the binary in `$PATH` for easier access:
+
+  ```sh
+  ln -s "$(go env GOPATH)/bin/cli" /usr/bin/supabase
+  ```
+
+  This works on other non-standard Linux distros.
+</details>
+
+<details>
+  <summary><b>Community Maintained Packages</b></summary>
+
+  Available via [pkgx](https://pkgx.sh/). Package script [here](https://github.com/pkgxdev/pantry/blob/main/projects/supabase.com/cli/package.yml).
+  To install in your working directory:
+
+  ```bash
+  pkgx install supabase
+  ```
+
+  Available via [Nixpkgs](https://nixos.org/). Package script [here](https://github.com/NixOS/nixpkgs/blob/master/pkgs/development/tools/supabase-cli/default.nix).
+</details>
+
+### Run the CLI
 
 ```bash
-supabase secrets set GEMINI_MODEL='gemini-2.5-flash'
+supabase bootstrap
+```
+
+Or using npx:
+
+```bash
+npx supabase bootstrap
+```
+
+The bootstrap command will guide you through the process of setting up a Supabase project using one of the [starter](https://github.com/supabase-community/supabase-samples/blob/main/samples.json) templates.
+
+## Docs
+
+Command & config reference can be found [here](https://supabase.com/docs/reference/cli/about).
+
+## Breaking changes
+
+We follow semantic versioning for changes that directly impact CLI commands, flags, and configurations.
+
+However, due to dependencies on other service images, we cannot guarantee that schema migrations, seed.sql, and generated types will always work for the same CLI major version. If you need such guarantees, we encourage you to pin a specific version of CLI in package.json.
+
+## Developing
+
+To run from source:
+
+```sh
+# Go >= 1.22
+go run . help
 ```

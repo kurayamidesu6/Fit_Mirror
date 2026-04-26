@@ -7,9 +7,9 @@ export const DEVNET_RPC = 'https://api.devnet.solana.com';
 // Replace with your actual SPL token mint address on devnet after creating it.
 // Create a token: `spl-token create-token --url devnet`
 // Then mint supply: `spl-token mint <MINT_ADDRESS> 1000000 --url devnet`
-export const TOKEN_MINT_ADDRESS = 'REPLACE_WITH_YOUR_MINT_ADDRESS';
+export const TOKEN_MINT_ADDRESS =  'F7wHeEWBpxCybmH2Fu5ajYzDUHCPPLoqamTBnxsdz5EG';
 export const TOKEN_SYMBOL = 'FIT';   // Display name for your coin
-export const TOKEN_DECIMALS = 0;     // 0 = whole tokens only (no fractions)
+export const TOKEN_DECIMALS = 9;     // Token 2022 with 9 decimal places
 // ────────────────────────────────────────────────────────────────────────────
 
 /** @param {string} addr */
